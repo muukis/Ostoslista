@@ -7,8 +7,9 @@ namespace OstoslistaServices
 {
     public interface IShoppingListService
     {
-        Task<IEnumerable<ShoppingListItemResult>> FindShoppingListItems(Func<ShoppingListItemResult, bool> func);
-        Task<ShoppingListItemResult> CreateShoppingListItem(string title);
-        Task DeleteShoppingListItems(Predicate<ShoppingListItemResult> match);
+        Task<IEnumerable<ShoppingListItemResult>> FindItems(Func<ShoppingListItemResult, bool> func);
+        Task<ShoppingListItemResult> CreateItem(string title);
+        Task<int> DeleteItems(Predicate<ShoppingListItemResult> match);
+        Task<ShoppingListItemResult> Save(ShoppingListItemResult item);
     }
 }
