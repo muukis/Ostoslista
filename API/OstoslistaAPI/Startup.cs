@@ -8,6 +8,9 @@ using Swashbuckle.AspNetCore.Swagger;
 
 namespace OstoslistaAPI
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class Startup
     {
         private const string API_TITLE = "Shopping List API";

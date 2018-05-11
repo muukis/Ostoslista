@@ -48,6 +48,7 @@ namespace OstoslistaAPI.Controllers
         /// </summary>
         /// <returns><see cref="ShoppingListItemResult"/> object</returns>
         [HttpGet]
+        [Route("pending")]
         [SwaggerOperation("GetShoppingListItems")]
         [SwaggerResponse(200, typeof(ShoppingListItemResult[]), "Returns array of pending shopping list items")]
         [SwaggerResponse(400, typeof(ErrorResult), "Invalid request")]
