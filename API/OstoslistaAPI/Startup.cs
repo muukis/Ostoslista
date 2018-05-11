@@ -19,10 +19,22 @@ namespace OstoslistaAPI
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="configuration"></param>
-        public Startup(IConfiguration configuration)
+        /// <param name="hostEnv"></param>
+        public Startup(IHostingEnvironment hostEnv)
         {
-            Configuration = configuration;
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(hostEnv.ContentRootPath)
+                .AddJsonFile("appsettings.json")
+                .AddJsonFile($"appsettings.{hostEnv.EnvironmentName}.json", true)
+                .AddEnvironmentVariables();
+
+            if (hostEnv.IsEnvironment("Development"))
+            {
+                // This will push telemetry data through Application Insights pipeline faster, allowing you to view results immediately.
+                builder.AddApplicationInsightsSettings(true);
+            }
+
+            Configuration = builder.Build();
         }
 
         /// <summary>
@@ -70,6 +82,8 @@ namespace OstoslistaAPI
                     c.IncludeXmlComments(xmlComments);
                     c.DescribeAllEnumsAsStrings();
                 });
+
+                swagger = true;
             }
         }
 
@@ -86,11 +100,15 @@ namespace OstoslistaAPI
             }
 
             app.UseMvc();
-            app.UseSwagger();
-            app.UseSwaggerUI(c =>
+
+            if (this.swagger)
             {
-                c.SwaggerEndpoint("/swagger/ui/swagger.json", API_TITLE);
-            });
+                app.UseSwagger();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/ui/swagger.json", API_TITLE);
+                });
+            }
         }
 
         /// <summary>
