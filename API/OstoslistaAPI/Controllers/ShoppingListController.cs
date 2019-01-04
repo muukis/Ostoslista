@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OstoslistaContracts;
-using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -242,7 +241,7 @@ namespace OstoslistaAPI.Controllers
         /// <response code="400">Invalid request</response>
         /// <response code="500">Internal server error</response>
         [HttpDelete]
-        [Route("pending")]
+        [Route("unpending")]
         [ProducesResponseType(typeof(int), 200)]
         [ProducesResponseType(typeof(ErrorResult), 400)]
         [ProducesResponseType(typeof(ErrorResult), 500)]
