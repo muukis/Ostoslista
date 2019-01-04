@@ -21,11 +21,14 @@ namespace OstoslistaAPI.Controllers
         /// Get all shopping list items
         /// </summary>
         /// <returns><see cref="ShoppingListItemResult"/> object</returns>
+        /// <response code="200">Array of shopping list items</response>
+        /// <response code="400">Invalid request</response>
+        /// <response code="500">Internal server error</response>
         [HttpGet]
-        [SwaggerOperation("GetShoppingListItems")]
-        [SwaggerResponse(200, typeof(ShoppingListItemResult[]), "Returns array of shopping list items")]
-        [SwaggerResponse(400, typeof(ErrorResult), "Invalid request")]
-        [SwaggerResponse(500, typeof(ErrorResult), "Internal server error")]
+        [HttpGet("{id}")]
+        [ProducesResponseType(typeof(ShoppingListItemResult[]), 200)]
+        [ProducesResponseType(typeof(ErrorResult), 400)]
+        [ProducesResponseType(typeof(ErrorResult), 500)]
         public async Task<IActionResult> GetShoppingListItems()
         {
             try
@@ -46,13 +49,15 @@ namespace OstoslistaAPI.Controllers
         /// <summary>
         /// Get all pending shopping list items
         /// </summary>
-        /// <returns><see cref="ShoppingListItemResult"/> object</returns>
+        /// <returns>Array of <see cref="ShoppingListItemResult"/> objects</returns>
+        /// <response code="200">Array of pending shopping list items</response>
+        /// <response code="400">Invalid request</response>
+        /// <response code="500">Internal server error</response>
         [HttpGet]
         [Route("pending")]
-        [SwaggerOperation("GetShoppingListItems")]
-        [SwaggerResponse(200, typeof(ShoppingListItemResult[]), "Returns array of pending shopping list items")]
-        [SwaggerResponse(400, typeof(ErrorResult), "Invalid request")]
-        [SwaggerResponse(500, typeof(ErrorResult), "Internal server error")]
+        [ProducesResponseType(typeof(ShoppingListItemResult[]), 200)]
+        [ProducesResponseType(typeof(ErrorResult), 400)]
+        [ProducesResponseType(typeof(ErrorResult), 500)]
         public async Task<IActionResult> GetPendingShoppingListItems()
         {
             try
@@ -75,12 +80,14 @@ namespace OstoslistaAPI.Controllers
         /// </summary>
         /// <param name="shoppingListItemId">Shopping list item identifier</param>
         /// <returns><see cref="ShoppingListItemResult"/> object</returns>
+        /// <response code="200">Shopping list item with the given id</response>
+        /// <response code="400">Invalid request</response>
+        /// <response code="500">Internal server error</response>
         [HttpGet]
         [Route("{shoppingListItemId}")]
-        [SwaggerOperation("GetShoppingListItem")]
-        [SwaggerResponse(200, typeof(ShoppingListItemResult), "Returns the shopping list item with the given id")]
-        [SwaggerResponse(400, typeof(ErrorResult), "Invalid request")]
-        [SwaggerResponse(500, typeof(ErrorResult), "Internal server error")]
+        [ProducesResponseType(typeof(ShoppingListItemResult), 200)]
+        [ProducesResponseType(typeof(ErrorResult), 400)]
+        [ProducesResponseType(typeof(ErrorResult), 500)]
         public async Task<IActionResult> GetShoppingListItem([FromRoute] Guid shoppingListItemId)
         {
             try
@@ -115,11 +122,13 @@ namespace OstoslistaAPI.Controllers
         /// </summary>
         /// <param name="title">Shopping list item title</param>
         /// <returns>Newly created <see cref="ShoppingListItemResult"/> object</returns>
+        /// <response code="200">Details about the created shopping list item</response>
+        /// <response code="400">Invalid request</response>
+        /// <response code="500">Internal server error</response>
         [HttpPost]
-        [SwaggerOperation("CreateShoppingListItem")]
-        [SwaggerResponse(200, typeof(ShoppingListItemResult), "Details about the created shopping list item")]
-        [SwaggerResponse(400, typeof(ErrorResult), "Invalid request")]
-        [SwaggerResponse(500, typeof(ErrorResult), "Internal server error")]
+        [ProducesResponseType(typeof(ShoppingListItemResult), 200)]
+        [ProducesResponseType(typeof(ErrorResult), 400)]
+        [ProducesResponseType(typeof(ErrorResult), 500)]
         public async Task<IActionResult> PostShoppingListItem([FromBody] string title)
         {
             try
@@ -143,12 +152,14 @@ namespace OstoslistaAPI.Controllers
         /// <param name="shoppingListItemId">Shopping list item identifier</param>
         /// <param name="pending">New shopping list item pending value</param>
         /// <returns><see cref="ShoppingListItemResult"/> object</returns>
+        /// <response code="200">Details about the updated shopping list item</response>
+        /// <response code="400">Invalid request</response>
+        /// <response code="500">Internal server error</response>
         [HttpPut]
         [Route("{shoppingListItemId}/{pending}")]
-        [SwaggerOperation("UpdateShoppingListItemPendingValue")]
-        [SwaggerResponse(200, typeof(ShoppingListItemResult), "Details about the updated shopping list item")]
-        [SwaggerResponse(400, typeof(ErrorResult), "Invalid request")]
-        [SwaggerResponse(500, typeof(ErrorResult), "Internal server error")]
+        [ProducesResponseType(typeof(ShoppingListItemResult), 200)]
+        [ProducesResponseType(typeof(ErrorResult), 400)]
+        [ProducesResponseType(typeof(ErrorResult), 500)]
         public async Task<IActionResult> UpdateShoppingListItemPendingValue([FromRoute] Guid shoppingListItemId, [FromRoute] bool pending)
         {
             try
@@ -187,18 +198,21 @@ namespace OstoslistaAPI.Controllers
         /// Delete shopping list item
         /// </summary>
         /// <param name="shoppingListItemId">Shopping list item identifier</param>
+        /// <returns>Count of deleted shopping items</returns>
+        /// <response code="200">Count of deleted shopping items</response>
+        /// <response code="400">Invalid request</response>
+        /// <response code="500">Internal server error</response>
         [HttpDelete]
         [Route("{shoppingListItemId}")]
-        [SwaggerOperation("DeleteShoppingListItem")]
-        [SwaggerResponse(200)]
-        [SwaggerResponse(400, typeof(ErrorResult), "Invalid request")]
-        [SwaggerResponse(500, typeof(ErrorResult), "Internal server error")]
+        [ProducesResponseType(typeof(int), 200)]
+        [ProducesResponseType(typeof(ErrorResult), 400)]
+        [ProducesResponseType(typeof(ErrorResult), 500)]
         public async Task<IActionResult> DeleteShoppingListItem([FromRoute] Guid shoppingListItemId)
         {
             try
             {
-                await service.DeleteItems(o => o.Id == shoppingListItemId);
-                return Ok();
+                int count = await service.DeleteItems(o => o.Id == shoppingListItemId);
+                return Ok(count);
             }
             catch (Exception)
             {
@@ -214,17 +228,20 @@ namespace OstoslistaAPI.Controllers
         /// <summary>
         /// Delete upending shopping list items
         /// </summary>
+        /// <returns>Count of deleted unpending shopping items</returns>
+        /// <response code="200">Count of deleted unpending shopping items</response>
+        /// <response code="400">Invalid request</response>
+        /// <response code="500">Internal server error</response>
         [HttpDelete]
-        [SwaggerOperation("DeleteUnpendingShoppingListItems")]
-        [SwaggerResponse(200, typeof(int), "Count of deleted unpending shopping items")]
-        [SwaggerResponse(400, typeof(ErrorResult), "Invalid request")]
-        [SwaggerResponse(500, typeof(ErrorResult), "Internal server error")]
+        [ProducesResponseType(typeof(int), 200)]
+        [ProducesResponseType(typeof(ErrorResult), 400)]
+        [ProducesResponseType(typeof(ErrorResult), 500)]
         public async Task<IActionResult> DeleteUnpendingShoppingListItems()
         {
             try
             {
-                await service.DeleteItems(o => !o.Pending);
-                return Ok();
+                int count = await service.DeleteItems(o => !o.Pending);
+                return Ok(count);
             }
             catch (Exception)
             {

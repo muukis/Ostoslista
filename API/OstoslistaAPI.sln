@@ -3,30 +3,44 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OstoslistaAPI", "OstoslistaAPI\OstoslistaAPI.csproj", "{B489EF93-8BCE-4992-8799-CE50107C0BF0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OstoslistaAPI", "OstoslistaAPI\OstoslistaAPI.csproj", "{B489EF93-8BCE-4992-8799-CE50107C0BF0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OstoslistaContracts", "..\OstoslistaContracts\OstoslistaContracts.csproj", "{6100C93D-89C1-4F3A-ACE4-EA02BAE83D8F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OstoslistaContracts", "..\OstoslistaContracts\OstoslistaContracts.csproj", "{6100C93D-89C1-4F3A-ACE4-EA02BAE83D8F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OstoslistaServices", "OstoslistaServices\OstoslistaServices.csproj", "{C2E33376-973C-4F22-817B-2EC27AE383BA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OstoslistaServices", "OstoslistaServices\OstoslistaServices.csproj", "{C2E33376-973C-4F22-817B-2EC27AE383BA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
 		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{B489EF93-8BCE-4992-8799-CE50107C0BF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B489EF93-8BCE-4992-8799-CE50107C0BF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B489EF93-8BCE-4992-8799-CE50107C0BF0}.Debug|x64.ActiveCfg = Debug|x64
+		{B489EF93-8BCE-4992-8799-CE50107C0BF0}.Debug|x64.Build.0 = Debug|x64
 		{B489EF93-8BCE-4992-8799-CE50107C0BF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B489EF93-8BCE-4992-8799-CE50107C0BF0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B489EF93-8BCE-4992-8799-CE50107C0BF0}.Release|x64.ActiveCfg = Release|x64
+		{B489EF93-8BCE-4992-8799-CE50107C0BF0}.Release|x64.Build.0 = Release|x64
 		{6100C93D-89C1-4F3A-ACE4-EA02BAE83D8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6100C93D-89C1-4F3A-ACE4-EA02BAE83D8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6100C93D-89C1-4F3A-ACE4-EA02BAE83D8F}.Debug|x64.ActiveCfg = Debug|x64
+		{6100C93D-89C1-4F3A-ACE4-EA02BAE83D8F}.Debug|x64.Build.0 = Debug|x64
 		{6100C93D-89C1-4F3A-ACE4-EA02BAE83D8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6100C93D-89C1-4F3A-ACE4-EA02BAE83D8F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6100C93D-89C1-4F3A-ACE4-EA02BAE83D8F}.Release|x64.ActiveCfg = Release|x64
+		{6100C93D-89C1-4F3A-ACE4-EA02BAE83D8F}.Release|x64.Build.0 = Release|x64
 		{C2E33376-973C-4F22-817B-2EC27AE383BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C2E33376-973C-4F22-817B-2EC27AE383BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2E33376-973C-4F22-817B-2EC27AE383BA}.Debug|x64.ActiveCfg = Debug|x64
+		{C2E33376-973C-4F22-817B-2EC27AE383BA}.Debug|x64.Build.0 = Debug|x64
 		{C2E33376-973C-4F22-817B-2EC27AE383BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C2E33376-973C-4F22-817B-2EC27AE383BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2E33376-973C-4F22-817B-2EC27AE383BA}.Release|x64.ActiveCfg = Release|x64
+		{C2E33376-973C-4F22-817B-2EC27AE383BA}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

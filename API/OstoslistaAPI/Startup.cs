@@ -61,30 +61,30 @@ namespace OstoslistaAPI
 
             string xmlComments = GetXmlCommentsPath();
 
-            if (System.IO.File.Exists(xmlComments))
+            services.AddSwaggerGen(c =>
             {
-                services.AddSwaggerGen(c =>
-                {
-                    c.SwaggerDoc("ui", 
-                        new Info
+                c.SwaggerDoc("ui",
+                    new Info
+                    {
+                        Title = API_TITLE,
+                        Description = "An API for creating and managing shopping list",
+                        Version = "v1",
+                        TermsOfService = "None",
+                        Contact = new Contact
                         {
-                            Title = API_TITLE,
-                            Description = "An API for creating and managing shopping list",
-                            Version = "v1",
-                            TermsOfService = "None",
-                            Contact = new Contact
-                            {
-                                Email = "roskis@pilssi.net",
-                                Name = "Mikko Andersson",
-                                Url = "http://localhost"
-                            }
-                        });
-                    c.IncludeXmlComments(xmlComments);
-                    c.DescribeAllEnumsAsStrings();
-                });
+                            Email = "roskis@pilssi.net",
+                            Name = "Mikko Andersson",
+                            Url = "http://localhost"
+                        }
+                    });
 
-                swagger = true;
-            }
+                if (System.IO.File.Exists(xmlComments))
+                {
+                    c.IncludeXmlComments(xmlComments);
+                }
+
+                c.DescribeAllEnumsAsStrings();
+            });
         }
 
         /// <summary>
@@ -101,14 +101,11 @@ namespace OstoslistaAPI
 
             app.UseMvc();
 
-            if (this.swagger)
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
             {
-                app.UseSwagger();
-                app.UseSwaggerUI(c =>
-                {
-                    c.SwaggerEndpoint("/swagger/ui/swagger.json", API_TITLE);
-                });
-            }
+                c.SwaggerEndpoint("/swagger/ui/swagger.json", API_TITLE);
+            });
         }
 
         /// <summary>
