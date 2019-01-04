@@ -235,17 +235,18 @@ namespace OstoslistaAPI.Controllers
         }
 
         /// <summary>
-        /// Delete upending shopping list items
+        /// Delete all unpending shopping list items
         /// </summary>
         /// <returns>Count of deleted unpending shopping items</returns>
         /// <response code="200">Count of deleted unpending shopping items</response>
         /// <response code="400">Invalid request</response>
         /// <response code="500">Internal server error</response>
         [HttpDelete]
+        [Route("pending")]
         [ProducesResponseType(typeof(int), 200)]
         [ProducesResponseType(typeof(ErrorResult), 400)]
         [ProducesResponseType(typeof(ErrorResult), 500)]
-        public async Task<IActionResult> DeleteUnpendingShoppingListItems()
+        public async Task<IActionResult> DeleteAllUnpendingShoppingListItems()
         {
             try
             {
