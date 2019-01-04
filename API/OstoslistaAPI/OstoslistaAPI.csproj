@@ -7,11 +7,15 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>bin\Debug\netcoreapp2.0\OstoslistaAPI.xml</DocumentationFile>
+    <DocumentationFile>bin\Debug\netcoreapp2.2\OstoslistaAPI.xml</DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <DocumentationFile>bin\Debug\netcoreapp2.0\OstoslistaAPI.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>bin\Release\netcoreapp2.2\OstoslistaAPI.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
