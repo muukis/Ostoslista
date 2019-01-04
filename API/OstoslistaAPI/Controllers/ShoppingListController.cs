@@ -189,7 +189,7 @@ namespace OstoslistaAPI.Controllers
                 shoppingListItem.Pending = pending;
                 shoppingListItem.Modified = DateTime.Now;
 
-                return Ok(service.Save(shoppingListItem));
+                return Ok(await service.Save(shoppingListItem));
             }
             catch (Exception)
             {
