@@ -132,7 +132,17 @@ namespace OstoslistaAPI.Controllers
         {
             try
             {
-                return Ok(await service.CreateItem(title));
+                if (string.IsNullOrWhiteSpace(title))
+                {
+                    return Error(new ErrorResult
+                    {
+                        Code = 400,
+                        Classification = ErrorClassification.InvalidArgument,
+                        Message = "Invalid title value"
+                    });
+                }
+
+                return Ok(await service.CreateItem(title.Trim()));
             }
             catch (Exception)
             {
