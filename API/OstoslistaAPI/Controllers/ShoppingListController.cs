@@ -25,11 +25,10 @@ namespace OstoslistaAPI.Controllers
         /// <response code="400">Invalid request</response>
         /// <response code="500">Internal server error</response>
         [HttpGet]
-        [HttpGet("{id}")]
         [ProducesResponseType(typeof(ShoppingListItemResult[]), 200)]
         [ProducesResponseType(typeof(ErrorResult), 400)]
         [ProducesResponseType(typeof(ErrorResult), 500)]
-        public async Task<IActionResult> GetShoppingListItems()
+        public async Task<IActionResult> GetAllShoppingListItems()
         {
             try
             {
