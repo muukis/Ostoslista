@@ -3,6 +3,7 @@ using OstoslistaContracts;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using OstoslistaInterfaces;
 using OstoslistaServices;
 
 namespace OstoslistaAPI.Controllers
@@ -60,7 +61,7 @@ namespace OstoslistaAPI.Controllers
         {
             try
             {
-                return Ok(await service.FindItems(o => o.Pending));
+                return Ok(await service.FindItems(o => o.Pending == true));
             }
             catch (Exception)
             {
@@ -249,7 +250,7 @@ namespace OstoslistaAPI.Controllers
         {
             try
             {
-                int count = await service.DeleteItems(o => !o.Pending);
+                int count = await service.DeleteItems(o => o.Pending == false);
                 return Ok(count);
             }
             catch (Exception)
