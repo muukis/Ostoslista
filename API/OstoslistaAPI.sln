@@ -9,9 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OstoslistaContracts", "..\O
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OstoslistaServices", "OstoslistaServices\OstoslistaServices.csproj", "{C2E33376-973C-4F22-817B-2EC27AE383BA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OstoslistaInterfaces", "OstoslistaInterfaces\OstoslistaInterfaces.csproj", "{83543029-436F-473E-AC71-4DB1A7DBA91E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OstoslistaInterfaces", "OstoslistaInterfaces\OstoslistaInterfaces.csproj", "{83543029-436F-473E-AC71-4DB1A7DBA91E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OstoslistaData", "OstoslistaData\OstoslistaData.csproj", "{D688F1CB-1E8F-4332-AABB-145B48973076}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OstoslistaData", "OstoslistaData\OstoslistaData.csproj", "{D688F1CB-1E8F-4332-AABB-145B48973076}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

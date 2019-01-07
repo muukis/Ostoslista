@@ -109,6 +109,7 @@ namespace OstoslistaAPI
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseStaticFiles();
             app.UseMvc();
 
             app.UseSwagger();
