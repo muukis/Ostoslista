@@ -77,7 +77,7 @@ namespace OstoslistaAPI.Controllers
                 {
                     Code = 900,
                     Classification = ErrorClassification.InternalError,
-                    Message = e.ToString()//"Failed getting shopping list items"
+                    Message = Startup.CONNECTIONSTRING + " KUKKUU " + e.ToString()//"Failed getting shopping list items"
                 });
             }
         }

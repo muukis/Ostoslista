@@ -17,6 +17,7 @@ namespace OstoslistaAPI
     /// </summary>
     public class Startup
     {
+        public static string CONNECTIONSTRING;
         private const string API_TITLE = "Shopping List API";
 
         /// <summary>
@@ -93,6 +94,7 @@ namespace OstoslistaAPI
                 c.DescribeAllEnumsAsStrings();
             });
 
+            CONNECTIONSTRING = Configuration.GetConnectionString("ShoppingListDatabase");
             services.AddDbContext<ShoppingListDataService>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("ShoppingListDatabase")));
         }
