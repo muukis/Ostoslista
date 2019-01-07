@@ -10,6 +10,22 @@ namespace OstoslistaData
 {
     public class ShoppingListDataService : DbContext, IShoppingListDataService
     {
+        public ShoppingListDataService(DbContextOptions options)
+            : base(options)
+        { }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+
+            var e = modelBuilder.Entity<ShoppingListItemEntity>();
+
+            e.HasKey(o => o.Id);
+            e.Property(o => o.Pending).IsRequired(false).ValueGeneratedOnAddOrUpdate();
+            e.Property(o => o.Title).IsRequired().HasMaxLength(100);
+            e.Property(o => o.Created).IsRequired(false).ValueGeneratedOnAddOrUpdate();
+            e.Property(o => o.Modified).IsRequired(false).ValueGeneratedOnAddOrUpdate();
+        }
+
         public virtual DbSet<ShoppingListItemEntity> Ostoslista { get; set; }
 
         public async Task<IEnumerable<IShoppingListItem>> FindItems(Expression<Func<IShoppingListItem, bool>> predicate)

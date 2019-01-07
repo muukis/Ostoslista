@@ -4,7 +4,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using OstoslistaInterfaces;
-using OstoslistaServices;
 
 namespace OstoslistaAPI.Controllers
 {
@@ -15,7 +14,16 @@ namespace OstoslistaAPI.Controllers
     [Produces("application/json")]
     public class ShoppingListController : BaseController
     {
-        private IShoppingListService service = new ShoppingListServiceMock();
+        private readonly IShoppingListService _service;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="service"></param>
+        public ShoppingListController(IShoppingListService service)
+        {
+            _service = service;
+        }
 
         /// <summary>
         /// Get all shopping list items
@@ -32,7 +40,7 @@ namespace OstoslistaAPI.Controllers
         {
             try
             {
-                return Ok(await service.FindItems(o => true));
+                return Ok(await _service.FindItems(o => true));
             }
             catch (Exception)
             {
@@ -61,7 +69,7 @@ namespace OstoslistaAPI.Controllers
         {
             try
             {
-                return Ok(await service.FindItems(o => o.Pending == true));
+                return Ok(await _service.FindItems(o => o.Pending == true));
             }
             catch (Exception)
             {
@@ -91,7 +99,7 @@ namespace OstoslistaAPI.Controllers
         {
             try
             {
-                var searchResult = (await service.FindItems(o => o.Id == shoppingListItemId)).ToList();
+                var searchResult = (await _service.FindItems(o => o.Id == shoppingListItemId)).ToList();
 
                 if (!searchResult.Any())
                 {
@@ -142,9 +150,9 @@ namespace OstoslistaAPI.Controllers
                     });
                 }
 
-                return Ok(await service.CreateItem(title.Trim()));
+                return Ok(await _service.CreateItem(title.Trim()));
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 return Error(new ErrorResult
                 {
@@ -173,7 +181,7 @@ namespace OstoslistaAPI.Controllers
         {
             try
             {
-                var searchResult = (await service.FindItems(o => o.Id == shoppingListItemId)).ToList();
+                var searchResult = (await _service.FindItems(o => o.Id == shoppingListItemId)).ToList();
 
                 if (!searchResult.Any())
                 {
@@ -190,7 +198,7 @@ namespace OstoslistaAPI.Controllers
                 shoppingListItem.Pending = pending;
                 shoppingListItem.Modified = DateTime.Now;
 
-                return Ok(await service.Save(shoppingListItem));
+                return Ok(await _service.Save(shoppingListItem));
             }
             catch (Exception)
             {
@@ -220,7 +228,7 @@ namespace OstoslistaAPI.Controllers
         {
             try
             {
-                int count = await service.DeleteItems(o => o.Id == shoppingListItemId);
+                int count = await _service.DeleteItems(o => o.Id == shoppingListItemId);
                 return Ok(count);
             }
             catch (Exception)
@@ -250,7 +258,7 @@ namespace OstoslistaAPI.Controllers
         {
             try
             {
-                int count = await service.DeleteItems(o => o.Pending == false);
+                int count = await _service.DeleteItems(o => o.Pending == false);
                 return Ok(count);
             }
             catch (Exception)

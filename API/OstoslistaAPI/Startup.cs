@@ -1,9 +1,13 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.PlatformAbstractions;
 using Newtonsoft.Json.Serialization;
+using OstoslistaData;
+using OstoslistaInterfaces;
+using OstoslistaServices;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace OstoslistaAPI
@@ -26,6 +30,7 @@ namespace OstoslistaAPI
                 .SetBasePath(hostEnv.ContentRootPath)
                 .AddJsonFile("appsettings.json")
                 .AddJsonFile($"appsettings.{hostEnv.EnvironmentName}.json", true)
+                .AddUserSecrets<Startup>()
                 .AddEnvironmentVariables();
 
             if (hostEnv.IsEnvironment("Development"))
@@ -59,6 +64,9 @@ namespace OstoslistaAPI
                     options.SerializerSettings.ContractResolver = new DefaultContractResolver();
                 });
 
+            services.AddTransient<IShoppingListDataService, ShoppingListDataService>();
+            services.AddTransient<IShoppingListService, ShoppingListService>();
+
             string xmlComments = GetXmlCommentsPath();
 
             services.AddSwaggerGen(c =>
@@ -85,6 +93,9 @@ namespace OstoslistaAPI
 
                 c.DescribeAllEnumsAsStrings();
             });
+
+            services.AddDbContext<ShoppingListDataService>(options =>
+                options.UseSqlServer(Configuration.GetConnectionString("ShoppingListDatabase")));
         }
 
         /// <summary>

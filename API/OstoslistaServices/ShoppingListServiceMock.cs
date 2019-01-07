@@ -57,7 +57,7 @@ namespace OstoslistaServices
 
         public async Task<IEnumerable<IShoppingListItem>> FindItems(Expression<Func<IShoppingListItem, bool>> predicate)
         {
-            return await GetQueryableList().Where(predicate).ToListAsync();
+            return GetQueryableList().Where(predicate).ToList();
         }
 
         public async Task<IShoppingListItem> CreateItem(string title)
