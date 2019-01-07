@@ -18,7 +18,6 @@ namespace OstoslistaAPI
     public class Startup
     {
         private const string API_TITLE = "Shopping List API";
-        private bool swagger = false;
 
         /// <summary>
         /// 

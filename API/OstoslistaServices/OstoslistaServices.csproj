@@ -6,10 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\OstoslistaContracts\OstoslistaContracts.csproj" />
     <ProjectReference Include="..\OstoslistaData\OstoslistaData.csproj" />
     <ProjectReference Include="..\OstoslistaInterfaces\OstoslistaInterfaces.csproj" />

@@ -152,7 +152,7 @@ namespace OstoslistaAPI.Controllers
 
                 return Ok(await _service.CreateItem(title.Trim()));
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return Error(new ErrorResult
                 {
