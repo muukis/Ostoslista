@@ -71,13 +71,13 @@ namespace OstoslistaAPI.Controllers
             {
                 return Ok(await _service.FindItems(o => o.Pending == true));
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return Error(new ErrorResult
                 {
                     Code = 900,
                     Classification = ErrorClassification.InternalError,
-                    Message = Startup.CONNECTIONSTRING + " KUKKUU " + e.ToString()//"Failed getting shopping list items"
+                    Message = "Failed getting pending shopping list items"
                 });
             }
         }

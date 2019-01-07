@@ -17,7 +17,6 @@ namespace OstoslistaAPI
     /// </summary>
     public class Startup
     {
-        public static string CONNECTIONSTRING;
         private const string API_TITLE = "Shopping List API";
 
         /// <summary>
@@ -94,7 +93,6 @@ namespace OstoslistaAPI
                 c.DescribeAllEnumsAsStrings();
             });
 
-            CONNECTIONSTRING = Configuration.GetConnectionString("ShoppingListDatabase");
             services.AddDbContext<ShoppingListDataService>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("ShoppingListDatabase")));
         }
@@ -127,7 +125,7 @@ namespace OstoslistaAPI
         private string GetXmlCommentsPath()
         {
             var app = PlatformServices.Default.Application;
-            return System.IO.Path.Combine(app.ApplicationBasePath, string.Format("{0}.xml", app.ApplicationName));
+            return System.IO.Path.Combine(app.ApplicationBasePath, $"{app.ApplicationName}.xml");
         }
     }
 }
