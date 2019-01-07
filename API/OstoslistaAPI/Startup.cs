@@ -79,9 +79,9 @@ namespace OstoslistaAPI
                         TermsOfService = "None",
                         Contact = new Contact
                         {
-                            Email = "roskis@pilssi.net",
+                            Email = "ostoslista@ostoslistaapi.azurewebsites.net",
                             Name = "Mikko Andersson",
-                            Url = "http://localhost"
+                            Url = "https://ostoslistaapi.azurewebsites.net/"
                         }
                     });
 

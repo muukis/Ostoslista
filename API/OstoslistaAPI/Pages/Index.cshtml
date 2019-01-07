@@ -5,5 +5,46 @@
 }
 
 <div class="text-center">
-    <h1>TÄÄ ON VARMAANKIN IHAN KOHTA VALMIS?</h1>
+    <h1>Ostoslista</h1>
+    <div class="ostoslista" id="ostoslista">Ladataan...</div>
 </div>
+
+<script type="text/javascript">
+    function loadShoppingListData(data) {
+        var ostoslista = $("#ostoslista");
+        ostoslista.html("");
+
+        for (var i = 0; i < data.length; i++) {
+            var tuote = $('<div class="ostoslista-item"></div>');
+            if (data[i].Pending) {
+                tuote.append($('<i name="tuoteKorissa" class="far fa-circle"></i>'));
+            } else {
+                tuote.append($('<i name="tuoteKorissa" class="far fa-check-circle"></i>'));
+            }
+            tuote.append($('<span style="margin-left: 10px"></span>').text(data[i].Title));
+            ostoslista.append(tuote);
+        };
+
+        $('i[name="tuoteKorissa"]').click(function() {
+            if ($(this).hasClass("fa-check-circle")) {
+                $(this).removeClass("fa-check-circle");
+                $(this).addClass("fa-circle");
+            } else {
+                $(this).removeClass("fa-circle");
+                $(this).addClass("fa-check-circle");
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        $.ajax({
+            type: 'GET',
+            url: "/api/ShoppingList",
+            dataType: 'json',
+            success: loadShoppingListData,
+            error: function(e) {
+                console.log("ERROR: " + e);
+            }
+        });
+    });
+</script>
