@@ -136,11 +136,11 @@ namespace OstoslistaAPI.Controllers
         [ProducesResponseType(typeof(ShoppingListItemResult), 200)]
         [ProducesResponseType(typeof(ErrorResult), 400)]
         [ProducesResponseType(typeof(ErrorResult), 500)]
-        public async Task<IActionResult> PostShoppingListItem([FromBody] string title)
+        public async Task<IActionResult> PostShoppingListItem([FromBody] ShoppingListTitleDto title)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(title))
+                if (string.IsNullOrWhiteSpace(title.Title))
                 {
                     return Error(new ErrorResult
                     {
@@ -150,7 +150,7 @@ namespace OstoslistaAPI.Controllers
                     });
                 }
 
-                return Ok(await _service.CreateItem(title.Trim()));
+                return Ok(await _service.CreateItem(title.Title.Trim()));
             }
             catch (Exception)
             {
