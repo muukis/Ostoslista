@@ -26,14 +26,14 @@ namespace OstoslistaServices
             return await _dataService.CreateItem(title);
         }
 
+        public async Task<IShoppingListItem> UpdateItemPendingStatus(Guid id, bool isPending)
+        {
+            return await _dataService.UpdateItemPendingStatus(id, isPending);
+        }
+
         public async Task<int> DeleteItems(Expression<Func<IShoppingListItem, bool>> predicate)
         {
             return await _dataService.DeleteItems(predicate);
-        }
-
-        public async Task<IShoppingListItem> Save(IShoppingListItem item = null)
-        {
-            return await _dataService.Save(item);
         }
     }
 }

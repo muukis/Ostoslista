@@ -76,17 +76,29 @@ namespace OstoslistaServices
             return retval;
         }
 
+        public async Task<IShoppingListItem> UpdateItemPendingStatus(Guid id, bool isPending)
+        {
+            var searchResult = (await FindItems(o => o.Id == id)).ToList();
+
+            if (!searchResult.Any())
+            {
+                return null;
+            }
+
+            var shoppingListItem = searchResult.First();
+
+            shoppingListItem.Pending = isPending;
+            shoppingListItem.Modified = DateTime.Now;
+
+            return shoppingListItem;
+        }
+
         public async Task<int> DeleteItems(Expression<Func<IShoppingListItem, bool>> predicate)
         {
             var itemsToDelete = (await FindItems(predicate)).Cast<ShoppingListItemEntity>().ToList();
             itemsToDelete.ForEach(o => mockedItemList.Remove(o));
             mockedItemQueryableList = null;
             return itemsToDelete.Count;
-        }
-
-        public async Task<IShoppingListItem> Save(IShoppingListItem item = null)
-        {
-            return item;
         }
     }
 }

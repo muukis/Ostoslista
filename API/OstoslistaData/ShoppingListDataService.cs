@@ -16,14 +16,13 @@ namespace OstoslistaData
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-
             var e = modelBuilder.Entity<ShoppingListItemEntity>();
 
             e.HasKey(o => o.Id);
-            e.Property(o => o.Pending).IsRequired(false).ValueGeneratedOnAddOrUpdate();
+            e.Property(o => o.Pending).IsRequired(false).ValueGeneratedOnAdd();
             e.Property(o => o.Title).IsRequired().HasMaxLength(100);
-            e.Property(o => o.Created).IsRequired(false).ValueGeneratedOnAddOrUpdate();
-            e.Property(o => o.Modified).IsRequired(false).ValueGeneratedOnAddOrUpdate();
+            e.Property(o => o.Created).IsRequired(false).ValueGeneratedOnAdd();
+            e.Property(o => o.Modified).IsRequired(false).ValueGeneratedOnAdd();
         }
 
         public virtual DbSet<ShoppingListItemEntity> Ostoslista { get; set; }
@@ -46,17 +45,29 @@ namespace OstoslistaData
             return newItem;
         }
 
+        public async Task<IShoppingListItem> UpdateItemPendingStatus(Guid id, bool isPending)
+        {
+            var searchResult = (await FindItems(o => o.Id == id)).ToList();
+
+            if (!searchResult.Any())
+            {
+                return null;
+            }
+
+            var shoppingListItem = searchResult.First();
+
+            shoppingListItem.Pending = isPending;
+            shoppingListItem.Modified = DateTime.Now;
+            await SaveChangesAsync();
+
+            return shoppingListItem;
+        }
+
         public async Task<int> DeleteItems(Expression<Func<IShoppingListItem, bool>> predicate)
         {
             var itemsToDelete = (await FindItems(predicate)).Cast<ShoppingListItemEntity>().ToList();
             Ostoslista.RemoveRange(itemsToDelete);
             return await SaveChangesAsync();
-        }
-
-        public async Task<IShoppingListItem> Save(IShoppingListItem item = null)
-        {
-            await SaveChangesAsync();
-            return item;
         }
     }
 }

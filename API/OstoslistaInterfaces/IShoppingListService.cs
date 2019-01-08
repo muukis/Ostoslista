@@ -9,7 +9,7 @@ namespace OstoslistaInterfaces
     {
         Task<IEnumerable<IShoppingListItem>> FindItems(Expression<Func<IShoppingListItem, bool>> predicate);
         Task<IShoppingListItem> CreateItem(string title);
+        Task<IShoppingListItem> UpdateItemPendingStatus(Guid id, bool isPending);
         Task<int> DeleteItems(Expression<Func<IShoppingListItem, bool>> predicate);
-        Task<IShoppingListItem> Save(IShoppingListItem item = null);
     }
 }

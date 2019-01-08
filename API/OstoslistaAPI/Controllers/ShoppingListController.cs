@@ -181,24 +181,7 @@ namespace OstoslistaAPI.Controllers
         {
             try
             {
-                var searchResult = (await _service.FindItems(o => o.Id == shoppingListItemId)).ToList();
-
-                if (!searchResult.Any())
-                {
-                    return Error(new ErrorResult
-                    {
-                        Code = 600,
-                        Classification = ErrorClassification.EntityNotFound,
-                        Message = "Shopping list item not found"
-                    });
-                }
-
-                var shoppingListItem = searchResult.First();
-
-                shoppingListItem.Pending = pending;
-                shoppingListItem.Modified = DateTime.Now;
-
-                return Ok(await _service.Save(shoppingListItem));
+                return Ok(await _service.UpdateItemPendingStatus(shoppingListItemId, pending));
             }
             catch (Exception)
             {

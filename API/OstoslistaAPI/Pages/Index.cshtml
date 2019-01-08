@@ -4,12 +4,71 @@
     ViewData["Title"] = "Tuotteet";
 }
 
+<style type="text/css">
+    #waitIndContainer {
+        display: table;
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 150px;
+        height: 60px;
+        margin: auto;
+        background-color: #000000;
+        border: 2px solid gray;
+        border-radius: 10px;
+        padding: 15px;
+    }
+
+    .waitInd {
+        display: table-cell;
+        color: #ffffff;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .ostoslista {
+        margin-top: 10px;
+    }
+</style>
+
 <div class="text-center">
     <h1>Ostoslista</h1>
+    <div>Lisää uuri rivi: <input type="text" id="uusiTuote"/></div>
     <div class="ostoslista" id="ostoslista">Ladataan...</div>
 </div>
 
 <script type="text/javascript">
+    function togglePending() {
+        var elem = $(this).find("i");
+        var guidElement = $(this).find('input[name="tuoteId"]');
+
+        if (!elem || !guidElement) {
+            return;
+        }
+
+        var setPending = elem.hasClass("fa-check-circle");
+
+        $.ajax({
+            type: 'PUT',
+            url: "/api/ShoppingList/" + guidElement.val() + "/" + setPending,
+            dataType: 'json',
+            success: function(data) {
+                if (setPending) {
+                    elem.removeClass("fa-check-circle");
+                    elem.addClass("fa-circle");
+                } else {
+                    elem.removeClass("fa-circle");
+                    elem.addClass("fa-check-circle");
+                }
+            },
+            error: function(e) {
+                console.log("ERROR: " + e);
+            }
+        });
+    }
+
     function loadShoppingListData(data) {
         var ostoslista = $("#ostoslista");
         ostoslista.html("");
@@ -22,21 +81,26 @@
                 tuote.append($('<i name="tuoteKorissa" class="far fa-check-circle"></i>'));
             }
             tuote.append($('<span style="margin-left: 10px"></span>').text(data[i].Title));
+            tuote.append($('<input type="hidden" name="tuoteId"/>').val(data[i].Id));
+            tuote.click(togglePending);
             ostoslista.append(tuote);
         };
-
-        $('i[name="tuoteKorissa"]').click(function() {
-            if ($(this).hasClass("fa-check-circle")) {
-                $(this).removeClass("fa-check-circle");
-                $(this).addClass("fa-circle");
-            } else {
-                $(this).removeClass("fa-circle");
-                $(this).addClass("fa-check-circle");
-            }
-        });
     }
 
-    $(document).ready(function() {
+    $(document).ready(function () {
+        $.blockUI.defaults.css = {};
+
+        $.ajaxSetup({
+            beforeSend: function() {
+                $.blockUI({
+                    message: '<div id="waitIndContainer"><div class="waitInd"><i class="fas fa-cog fa-spin"></i> Hetkinen...</div></div>'
+                });
+            },
+            complete: function () {
+                $.unblockUI();
+            }
+        });
+
         $.ajax({
             type: 'GET',
             url: "/api/ShoppingList",
