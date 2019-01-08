@@ -125,7 +125,7 @@ namespace OstoslistaAPI.Controllers
         }
 
         /// <summary>
-        /// Create new shopping list item
+        /// Create new shopping list item with request type POST
         /// </summary>
         /// <param name="title">Shopping list item title</param>
         /// <returns>Newly created <see cref="ShoppingListItemResult"/> object</returns>
@@ -138,9 +138,37 @@ namespace OstoslistaAPI.Controllers
         [ProducesResponseType(typeof(ErrorResult), 500)]
         public async Task<IActionResult> PostShoppingListItem([FromBody] ShoppingListTitleDto title)
         {
+            return await SaveNewShoppingListItem(title?.Title);
+        }
+
+        /// <summary>
+        /// Create new shopping list item with request type PUT
+        /// </summary>
+        /// <param name="title">Shopping list item title</param>
+        /// <returns>Newly created <see cref="ShoppingListItemResult"/> object</returns>
+        /// <response code="200">Details about the created shopping list item</response>
+        /// <response code="400">Invalid request</response>
+        /// <response code="500">Internal server error</response>
+        [HttpPut]
+        [Route("add/{title}")]
+        [ProducesResponseType(typeof(ShoppingListItemResult), 200)]
+        [ProducesResponseType(typeof(ErrorResult), 400)]
+        [ProducesResponseType(typeof(ErrorResult), 500)]
+        public async Task<IActionResult> SetShoppingListItem([FromRoute] string title)
+        {
+            return await SaveNewShoppingListItem(title);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="title"></param>
+        /// <returns></returns>
+        private async Task<IActionResult> SaveNewShoppingListItem(string title)
+        {
             try
             {
-                if (string.IsNullOrWhiteSpace(title.Title))
+                if (string.IsNullOrWhiteSpace(title))
                 {
                     return Error(new ErrorResult
                     {
@@ -150,7 +178,7 @@ namespace OstoslistaAPI.Controllers
                     });
                 }
 
-                return Ok(await _service.CreateItem(title.Title.Trim()));
+                return Ok(await _service.CreateItem(title.Trim()));
             }
             catch (Exception)
             {
