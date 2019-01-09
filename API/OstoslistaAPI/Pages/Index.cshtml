@@ -29,20 +29,40 @@
     }
 
     .shoppingList {
-        margin-top: 10px;
         font-size: 16pt;
+        text-align: left;
+        display: table;
+        margin: auto;
+        padding-top: 10px;
     }
 
     .buyCheckedItems {
         margin-top: 30px;
     }
+
+    .shoppingList-item-row {
+        overflow: hidden;
+        white-space: nowrap;
+        display: table-row;
+        cursor: pointer;
+    }
+
+    .shoppingList-item-cell {
+        overflow: hidden;
+        white-space: nowrap;
+        display: table-cell;
+    }
+
+    .buttons {
+        cursor: pointer;
+    }
 </style>
 
 <div class="text-center">
     <h1>Ostoslista</h1>
-    <div><input type="text" id="uusiTuote" placeholder="Syötä uusi tuote..." onkeypress="return keyPress(event);"/><input type="button" value="Lähetä" onclick="sendNew();"/></div>
+    <div><input type="text" id="uusiTuote" placeholder="Syötä uusi tuote..." onkeypress="return keyPress(event);"/><input type="button" value="Lähetä" onclick="sendNew();" class="buttons"/></div>
     <div class="shoppingList" id="ostoslista">Ladataan...</div>
-    <div class="buyCheckedItems"><input type="button" value="Maksa valitut tuotteet" onclick="buyCheckedItems();"/></div>
+    <div class="buyCheckedItems"><input type="button" value="Maksa valitut tuotteet" onclick="buyCheckedItems();" class="buttons"/></div>
 </div>
 
 <script type="text/javascript">
@@ -132,16 +152,21 @@
 
     function addItemToList(data) {
         var ostoslista = $("#ostoslista");
-        var tuote = $('<div class="ostoslista-item"></div>');
+        var row = $('<div class="shoppingList-item-row"></div>');
+        row.prop("title", data.Title);
+        var cell1 = $('<div class="shoppingList-item-cell"></div>');
         if (data.Pending) {
-            tuote.append($('<i name="tuoteKorissa" class="far fa-circle"></i>'));
+            cell1.append($('<i name="tuoteKorissa" class="far fa-circle"></i>'));
         } else {
-            tuote.append($('<i name="tuoteKorissa" class="far fa-check-circle"></i>'));
+            cell1.append($('<i name="tuoteKorissa" class="far fa-check-circle"></i>'));
         }
-        tuote.append($('<span style="margin-left: 10px"></span>').text(data.Title));
-        tuote.append($('<input type="hidden" name="tuoteId"/>').val(data.Id));
-        tuote.click(togglePending);
-        ostoslista.append(tuote);
+        row.append(cell1);
+        var cell2 = $('<div class="shoppingList-item-cell"></div>');
+        cell2.append($('<span style="margin-left: 10px"></span>').text(data.Title));
+        cell2.append($('<input type="hidden" name="tuoteId"/>').val(data.Id));
+        row.append(cell2);
+        row.click(togglePending);
+        ostoslista.append(row);
     }
 
     function loadShoppingListData() {

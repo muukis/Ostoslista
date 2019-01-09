@@ -34,9 +34,16 @@ namespace OstoslistaData
 
         public async Task<IShoppingListItem> CreateItem(string title)
         {
+            var sanitizedTitle = title.Substring(0, 1).ToUpper();
+
+            if (title.Length > 1)
+            {
+                sanitizedTitle += title.Substring(1).ToLower();
+            }
+
             var newItem = new ShoppingListItemEntity
             {
-                Title = title
+                Title = sanitizedTitle
             };
 
             await Ostoslista.AddAsync(newItem);

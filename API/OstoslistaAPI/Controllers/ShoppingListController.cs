@@ -40,7 +40,8 @@ namespace OstoslistaAPI.Controllers
         {
             try
             {
-                return Ok(await _service.FindItems(o => true));
+                var items = await _service.FindItems(o => true);
+                return Ok(items.OrderBy(o => o.Title));
             }
             catch (Exception)
             {
