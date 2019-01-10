@@ -33,7 +33,7 @@
         text-align: left;
         display: table;
         margin: auto;
-        padding-top: 10px;
+        padding-top: 15px;
     }
 
     .buyCheckedItems {
@@ -55,12 +55,26 @@
 
     .buttons {
         cursor: pointer;
+        border-radius: 8px;
+    }
+
+    .newItem {
+        border-radius: 8px;
+        padding: 3px;
+    }
+
+    .shoppingList-item-new {
+        color: green;
+        margin-left: 10px;
     }
 </style>
 
 <div class="text-center">
     <h1>Ostoslista</h1>
-    <div><input type="text" id="uusiTuote" placeholder="Syötä uusi tuote..." onkeypress="return keyPress(event);"/><input type="button" value="Lähetä" onclick="sendNew();" class="buttons"/></div>
+    <div>
+        <input type="text" id="uusiTuote" placeholder="Syötä uusi tuote..." onkeypress="return keyPress(event);" class="newItem"/>&nbsp;
+        <input type="button" value="Lähetä" onclick="sendNew();" class="buttons"/>
+    </div>
     <div class="shoppingList" id="ostoslista">Ladataan...</div>
     <div class="buyCheckedItems"><input type="button" value="Maksa valitut tuotteet" onclick="buyCheckedItems();" class="buttons"/></div>
 </div>
@@ -111,7 +125,7 @@
                 Title: title
             }),
             success: function(data) {
-                addItemToList(data);
+                addItemToList(data, true);
                 elem.val("");
                 elem.focus();
             },
@@ -150,8 +164,7 @@
         });
     }
 
-    function addItemToList(data) {
-        var ostoslista = $("#ostoslista");
+    function addItemToList(data, addPlus) {
         var row = $('<div class="shoppingList-item-row"></div>');
         row.prop("title", data.Title);
         var cell1 = $('<div class="shoppingList-item-cell"></div>');
@@ -164,9 +177,12 @@
         var cell2 = $('<div class="shoppingList-item-cell"></div>');
         cell2.append($('<span style="margin-left: 10px"></span>').text(data.Title));
         cell2.append($('<input type="hidden" name="tuoteId"/>').val(data.Id));
+        if (addPlus) {
+            cell2.append($('<i class="fa fa-plus-circle shoppingList-item-new" aria-hidden="true"></i>').val(data.Id));
+        }
         row.append(cell2);
         row.click(togglePending);
-        ostoslista.append(row);
+        row.hide().appendTo("#ostoslista").fadeIn(1000);
     }
 
     function loadShoppingListData() {
