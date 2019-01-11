@@ -1,20 +1,20 @@
 ﻿@page
 @model OstoslistaAPI.Pages.CreateNewShopperModel
 @{
-    ViewData["Title"] = "Error";
+    ViewData["Title"] = "Luo uusi ostoslista";
 }
 
 <div class="text-center">
     <h1>Luo uusi ostoslista</h1>
     <div>
-        <input
-            type="text"
-            id="uusiOstoslista"
-            placeholder="Ostoslistan nimi..."
-            onkeypress="return keyPress(event, sendNew);"
-            title="Syötä ostoslistan yksilöllinen nimi"
-            class="newItem"
-            value="@Model.GetRandomShopperName()"/>&nbsp;
+        Syötä ostoslistan yksilöllinen nimi:&nbsp;
+        <input type="text"
+               id="uusiOstoslista"
+               placeholder="Ostoslistan nimi..."
+               onkeypress="return keyPress(event, sendNew);"
+               title="Syötä ostoslistan yksilöllinen nimi"
+               class="newItem"
+               value="@Model.GetRandomShopperName()" />&nbsp;
         <input type="button" value="Lähetä" onclick="sendNew();" class="buttons" />
     </div>
 </div>
@@ -58,4 +58,19 @@
             }
         });
     }
+
+    $(document).ready(function () {
+        $.blockUI.defaults.css = {};
+
+        $.ajaxSetup({
+            beforeSend: function () {
+                $.blockUI({
+                    message: '<div id="waitIndContainer"><div class="waitInd"><i class="fas fa-cog fa-spin"></i> Hetkinen...</div></div>'
+                });
+            },
+            complete: function () {
+                $.unblockUI();
+            }
+        });
+    });
 </script>
