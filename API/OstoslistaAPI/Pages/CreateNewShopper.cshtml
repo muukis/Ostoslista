@@ -1,0 +1,76 @@
+﻿@page
+@model OstoslistaAPI.Pages.CreateNewShopperModel
+@{
+    ViewData["Title"] = "Luo uusi ostoslista";
+}
+
+<div class="text-center">
+    <h1>Luo uusi ostoslista</h1>
+    <div>
+        Syötä ostoslistan yksilöllinen nimi:&nbsp;
+        <input type="text"
+               id="uusiOstoslista"
+               placeholder="Ostoslistan nimi..."
+               onkeypress="return keyPress(event, sendNew);"
+               title="Syötä ostoslistan yksilöllinen nimi"
+               class="newItem"
+               value="@Model.GetRandomShopperName()" />&nbsp;
+        <input type="button" value="Lähetä" onclick="sendNew();" class="buttons" />
+    </div>
+</div>
+
+<script type="text/javascript">
+    function keyPress(e, delegate) {
+        if (e.keyCode === 13) {
+            delegate();
+            return false;
+        }
+    }
+
+    function sendNew() {
+        var elem = $("#uusiOstoslista");
+
+        if (!elem) {
+            return;
+        }
+
+        var name = elem.val().trim();
+
+        if (!name) {
+            return;
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: "/api/ShoppingList/addShopper",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify({
+                Name: name
+            }),
+            success: function (data) {
+                window.location = "/?lista=" + encodeURIComponent(data);
+            },
+            error: function(e) {
+                console.log("ERROR: " + e);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        $.blockUI.defaults.css = {};
+
+        $.ajaxSetup({
+            beforeSend: function () {
+                $.blockUI({
+                    message: '<div id="waitIndContainer"><div class="waitInd"><i class="fas fa-cog fa-spin"></i> Hetkinen...</div></div>'
+                });
+            },
+            complete: function () {
+                $.unblockUI();
+            }
+        });
+    });
+</script>

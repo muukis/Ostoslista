@@ -10,6 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\API\OstoslistaData\OstoslistaData.csproj" />
     <ProjectReference Include="..\API\OstoslistaInterfaces\OstoslistaInterfaces.csproj" />
   </ItemGroup>
 

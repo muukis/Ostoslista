@@ -3,7 +3,7 @@ using OstoslistaContracts;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using OstoslistaInterfaces;
+using OstoslistaData;
 
 namespace OstoslistaAPI.Controllers
 {
@@ -28,19 +28,21 @@ namespace OstoslistaAPI.Controllers
         /// <summary>
         /// Get all shopping list items
         /// </summary>
+        /// <param name="shopperName">Shopper name</param>
         /// <returns><see cref="ShoppingListItemResult"/> object</returns>
         /// <response code="200">Array of shopping list items</response>
         /// <response code="400">Invalid request</response>
         /// <response code="500">Internal server error</response>
         [HttpGet]
+        [Route("{shopperName}")]
         [ProducesResponseType(typeof(ShoppingListItemResult[]), 200)]
         [ProducesResponseType(typeof(ErrorResult), 400)]
         [ProducesResponseType(typeof(ErrorResult), 500)]
-        public async Task<IActionResult> GetAllShoppingListItems()
+        public async Task<IActionResult> GetAllShoppingListItems([FromRoute] string shopperName)
         {
             try
             {
-                var items = await _service.FindItems(o => true);
+                var items = (await _service.FindItems(o => string.Equals(o.Shopper.Name, shopperName, StringComparison.InvariantCulture))).ToResults();
                 return Ok(items.OrderBy(o => o.Title));
             }
             catch (Exception)
@@ -57,20 +59,22 @@ namespace OstoslistaAPI.Controllers
         /// <summary>
         /// Get all pending shopping list items
         /// </summary>
+        /// <param name="shopperName">Shopper name</param>
         /// <returns>Array of <see cref="ShoppingListItemResult"/> objects</returns>
         /// <response code="200">Array of pending shopping list items</response>
         /// <response code="400">Invalid request</response>
         /// <response code="500">Internal server error</response>
         [HttpGet]
-        [Route("pending")]
+        [Route("{shopperName}/pending")]
         [ProducesResponseType(typeof(ShoppingListItemResult[]), 200)]
         [ProducesResponseType(typeof(ErrorResult), 400)]
         [ProducesResponseType(typeof(ErrorResult), 500)]
-        public async Task<IActionResult> GetPendingShoppingListItems()
+        public async Task<IActionResult> GetPendingShoppingListItems([FromRoute] string shopperName)
         {
             try
             {
-                return Ok(await _service.FindItems(o => o.Pending == true));
+                var items = (await _service.FindItems(o => string.Equals(o.Shopper.Name, shopperName, StringComparison.InvariantCulture) && o.Pending == true)).ToResults();
+                return Ok(items);
             }
             catch (Exception)
             {
@@ -112,7 +116,7 @@ namespace OstoslistaAPI.Controllers
                     });
                 }
 
-                return Ok(searchResult.First());
+                return Ok(searchResult.First().ToResult());
             }
             catch (Exception)
             {
@@ -128,44 +132,48 @@ namespace OstoslistaAPI.Controllers
         /// <summary>
         /// Create new shopping list item with request type POST
         /// </summary>
+        /// <param name="shopperName">Shopper name</param>
         /// <param name="title">Shopping list item title</param>
         /// <returns>Newly created <see cref="ShoppingListItemResult"/> object</returns>
         /// <response code="200">Details about the created shopping list item</response>
         /// <response code="400">Invalid request</response>
         /// <response code="500">Internal server error</response>
         [HttpPost]
+        [Route("{shopperName}")]
         [ProducesResponseType(typeof(ShoppingListItemResult), 200)]
         [ProducesResponseType(typeof(ErrorResult), 400)]
         [ProducesResponseType(typeof(ErrorResult), 500)]
-        public async Task<IActionResult> PostShoppingListItem([FromBody] ShoppingListTitleDto title)
+        public async Task<IActionResult> PostShoppingListItem([FromRoute] string shopperName, [FromBody] ShoppingListTitleDto title)
         {
-            return await SaveNewShoppingListItem(title?.Title);
+            return await SaveNewShoppingListItem(shopperName, title?.Title);
         }
 
         /// <summary>
         /// Create new shopping list item with request type PUT
         /// </summary>
+        /// <param name="shopperName">Shopper name</param>
         /// <param name="title">Shopping list item title</param>
         /// <returns>Newly created <see cref="ShoppingListItemResult"/> object</returns>
         /// <response code="200">Details about the created shopping list item</response>
         /// <response code="400">Invalid request</response>
         /// <response code="500">Internal server error</response>
         [HttpPut]
-        [Route("add/{title}")]
+        [Route("{shopperName}/add/{title}")]
         [ProducesResponseType(typeof(ShoppingListItemResult), 200)]
         [ProducesResponseType(typeof(ErrorResult), 400)]
         [ProducesResponseType(typeof(ErrorResult), 500)]
-        public async Task<IActionResult> SetShoppingListItem([FromRoute] string title)
+        public async Task<IActionResult> SetShoppingListItem([FromRoute] string shopperName, [FromRoute] string title)
         {
-            return await SaveNewShoppingListItem(title);
+            return await SaveNewShoppingListItem(shopperName, title);
         }
 
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="shopperName">Shopper name</param>
         /// <param name="title"></param>
         /// <returns></returns>
-        private async Task<IActionResult> SaveNewShoppingListItem(string title)
+        private async Task<IActionResult> SaveNewShoppingListItem(string shopperName, string title)
         {
             try
             {
@@ -179,7 +187,7 @@ namespace OstoslistaAPI.Controllers
                     });
                 }
 
-                return Ok(await _service.CreateItem(title.Trim()));
+                return Ok((await _service.CreateItem(shopperName, title.Trim())).ToResult());
             }
             catch (Exception)
             {
@@ -210,7 +218,7 @@ namespace OstoslistaAPI.Controllers
         {
             try
             {
-                return Ok(await _service.UpdateItemPendingStatus(shoppingListItemId, pending));
+                return Ok((await _service.UpdateItemPendingStatus(shoppingListItemId, pending)).ToResult());
             }
             catch (Exception)
             {
@@ -257,21 +265,53 @@ namespace OstoslistaAPI.Controllers
         /// <summary>
         /// Delete all unpending shopping list items
         /// </summary>
+        /// <param name="shopperName">Shopper name</param>
         /// <returns>Count of deleted unpending shopping items</returns>
         /// <response code="200">Count of deleted unpending shopping items</response>
         /// <response code="400">Invalid request</response>
         /// <response code="500">Internal server error</response>
         [HttpDelete]
-        [Route("unpending")]
+        [Route("{shopperName}/unpending")]
         [ProducesResponseType(typeof(int), 200)]
         [ProducesResponseType(typeof(ErrorResult), 400)]
         [ProducesResponseType(typeof(ErrorResult), 500)]
-        public async Task<IActionResult> DeleteAllUnpendingShoppingListItems()
+        public async Task<IActionResult> DeleteAllUnpendingShoppingListItems([FromRoute] string shopperName)
         {
             try
             {
                 int count = await _service.DeleteItems(o => o.Pending == false);
                 return Ok(count);
+            }
+            catch (Exception)
+            {
+                return Error(new ErrorResult
+                {
+                    Code = 900,
+                    Classification = ErrorClassification.InternalError,
+                    Message = "Failed deleting shopping list item"
+                });
+            }
+        }
+
+        /// <summary>
+        /// Create new shopper
+        /// </summary>
+        /// <param name="shopperName">Shopper name</param>
+        /// <returns>Count of deleted unpending shopping items</returns>
+        /// <response code="200">Shopper name</response>
+        /// <response code="400">Invalid request</response>
+        /// <response code="500">Internal server error</response>
+        [HttpPost]
+        [Route("addShopper")]
+        [ProducesResponseType(typeof(string), 200)]
+        [ProducesResponseType(typeof(ErrorResult), 400)]
+        [ProducesResponseType(typeof(ErrorResult), 500)]
+        public async Task<IActionResult> CreateNewShopper([FromBody] ShopperNameDto shopperName)
+        {
+            try
+            {
+                var shopper = await _service.CreateShopper(shopperName.Name);
+                return Ok(shopper.Name);
             }
             catch (Exception)
             {

@@ -38,6 +38,72 @@
     </environment>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/lib/jquery-blockui/dist/jquery.blockUI.min.js"></script>
+
+<style type="text/css">
+    #waitIndContainer {
+        display: table;
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 150px;
+        height: 60px;
+        margin: auto;
+        background-color: #000000;
+        border: 2px solid gray;
+        border-radius: 10px;
+        padding: 15px;
+    }
+
+    .waitInd {
+        display: table-cell;
+        color: #ffffff;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .shoppingList {
+        font-size: 16pt;
+        text-align: left;
+        display: table;
+        margin: auto;
+        padding-top: 15px;
+    }
+
+    .buyCheckedItems {
+        margin-top: 30px;
+    }
+
+    .shoppingList-item-row {
+        overflow: hidden;
+        white-space: nowrap;
+        display: table-row;
+        cursor: pointer;
+    }
+
+    .shoppingList-item-cell {
+        overflow: hidden;
+        white-space: nowrap;
+        display: table-cell;
+    }
+
+    .buttons {
+        cursor: pointer;
+        border-radius: 8px;
+    }
+
+    .newItem {
+        border-radius: 8px;
+        padding: 3px;
+    }
+
+    .shoppingList-item-new {
+        color: green;
+        margin-left: 10px;
+    }
+</style>
+
 </head>
 <body>
     <header>
@@ -52,10 +118,19 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Tuotteet</a>
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">
+                                <i class="fas fa-shopping-basket"></i></i> Tuotteet
+                            </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" href="/swagger" target="_top">Swagger</a>
+                            <a class="nav-link text-dark" asp-area="" asp-page="/CreateNewShopper">
+                                <i class="fa fa-plus-circle"></i> Luo uusi ostoslista
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" href="/swagger" target="_top">
+                                <i class="fa fa-plug"></i> Swagger
+                            </a>
                         </li>
                     </ul>
                 </div>

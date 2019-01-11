@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -6,8 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.PlatformAbstractions;
 using Newtonsoft.Json.Serialization;
 using OstoslistaData;
-using OstoslistaInterfaces;
-using OstoslistaServices;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace OstoslistaAPI
@@ -94,7 +93,17 @@ namespace OstoslistaAPI
             });
 
             services.AddDbContext<ShoppingListDataService>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("ShoppingListDatabase")));
+                options
+                    .UseLazyLoadingProxies()
+                    .UseSqlServer(Configuration.GetConnectionString("ShoppingListDatabase")));
+
+            services.AddDistributedMemoryCache();
+
+            services.AddSession(options =>
+            {
+                options.Cookie.Name = ".ShoppingList.Session";
+                options.IdleTimeout = TimeSpan.FromDays(365);
+            });
         }
 
         /// <summary>
@@ -110,6 +119,7 @@ namespace OstoslistaAPI
             }
 
             app.UseStaticFiles();
+            app.UseSession();
             app.UseMvc();
 
             app.UseSwagger();
