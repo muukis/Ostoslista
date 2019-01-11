@@ -279,7 +279,7 @@ namespace OstoslistaAPI.Controllers
         {
             try
             {
-                int count = await _service.DeleteItems(o => o.Pending == false);
+                int count = await _service.DeleteItems(o => string.Equals(o.Shopper.Name, shopperName, StringComparison.InvariantCulture) && o.Pending == false);
                 return Ok(count);
             }
             catch (Exception)
