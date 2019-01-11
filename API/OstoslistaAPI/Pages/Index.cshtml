@@ -1,89 +1,27 @@
 ﻿@page
+@using System.Web
 @model OstoslistaAPI.Pages.IndexModel
 @{
-    ViewData["Title"] = "Tuotteet";
+    ViewData["Title"] = $"Tuotteet";
 }
 
-<style type="text/css">
-    #waitIndContainer {
-        display: table;
-        position: fixed;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        width: 150px;
-        height: 60px;
-        margin: auto;
-        background-color: #000000;
-        border: 2px solid gray;
-        border-radius: 10px;
-        padding: 15px;
-    }
-
-    .waitInd {
-        display: table-cell;
-        color: #ffffff;
-        text-align: center;
-        vertical-align: middle;
-    }
-
-    .shoppingList {
-        font-size: 16pt;
-        text-align: left;
-        display: table;
-        margin: auto;
-        padding-top: 15px;
-    }
-
-    .buyCheckedItems {
-        margin-top: 30px;
-    }
-
-    .shoppingList-item-row {
-        overflow: hidden;
-        white-space: nowrap;
-        display: table-row;
-        cursor: pointer;
-    }
-
-    .shoppingList-item-cell {
-        overflow: hidden;
-        white-space: nowrap;
-        display: table-cell;
-    }
-
-    .buttons {
-        cursor: pointer;
-        border-radius: 8px;
-    }
-
-    .newItem {
-        border-radius: 8px;
-        padding: 3px;
-    }
-
-    .shoppingList-item-new {
-        color: green;
-        margin-left: 10px;
-    }
-</style>
-
 <div class="text-center">
-    <h1>Ostoslista</h1>
-    <div>
-        <input type="text" id="uusiTuote" placeholder="Syötä uusi tuote..." onkeypress="return keyPress(event);" class="newItem"/>&nbsp;
-        <input type="button" value="Lähetä" onclick="sendNew();" class="buttons"/>
+    <h1>Ostoslista@(string.IsNullOrWhiteSpace(Model.ShopperName) ? "" : $" ({Model.HtmlEncodedShopperName})")</h1>
+    <div id="ostolistaTuotteet" style="display: none;">
+        <div>
+            <input type="text" id="uusiTuote" placeholder="Syötä uusi tuote..." onkeypress="return keyPress(event, sendNew);" class="newItem"/>&nbsp;
+            <input type="button" value="Lähetä" onclick="sendNew();" class="buttons"/>
+        </div>
+        <div class="shoppingList" id="ostoslista">Ladataan...</div>
+        <div class="buyCheckedItems"><input type="button" value="Maksa valitut tuotteet" onclick="buyCheckedItems();" class="buttons"/></div>
     </div>
-    <div class="shoppingList" id="ostoslista">Ladataan...</div>
-    <div class="buyCheckedItems"><input type="button" value="Maksa valitut tuotteet" onclick="buyCheckedItems();" class="buttons"/></div>
 </div>
 
 <script type="text/javascript">
     function buyCheckedItems() {
         $.ajax({
             type: 'DELETE',
-            url: "/api/ShoppingList/unpending",
+            url: "/api/ShoppingList/@Model.UrlEncodedShopperName/unpending",
             dataType: 'json',
             success: function() {
                 loadShoppingListData();
@@ -94,9 +32,9 @@
         });
     }
 
-    function keyPress(e) {
+    function keyPress(e, delegate) {
         if (e.keyCode === 13) {
-            sendNew();
+            delegate();
             return false;
         }
     }
@@ -116,7 +54,7 @@
 
         $.ajax({
             type: 'POST',
-            url: "/api/ShoppingList",
+            url: "/api/ShoppingList/@Model.UrlEncodedShopperName",
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
@@ -185,23 +123,51 @@
         row.hide().appendTo("#ostoslista").fadeIn(1000);
     }
 
+    function openShoppingList() {
+        var id = $("#ostoskassinTunnus");
+
+        if (!id) {
+            return;
+        }
+
+        window.location = "/?lista=" + encodeURIComponent(id.val());
+    }
+
     function loadShoppingListData() {
+        var elem = $("#ostolistaTuotteet");
+
+        if (@(Model.ShopperName?.Length ?? 0) === 0) {
+            elem.html("");
+            elem.append($("<h2>Käytä ostoskassi tunnustasi!</h2>"));
+            var row = $("<div></div>");
+            row.append($('<input type="text" id="ostoskassinTunnus" size="10" placeholder="Syötä tunnus..." onkeypress="return keyPress(event, openShoppingList);" class="newItem"/>'));
+            row.append("&nbsp;");
+            row.append($('<input type="button" value="Avaa" onclick="openShoppingList();" class="buttons" />'));
+            elem.append(row);
+            elem.show();
+            return;
+        }
+
+        elem.show();
+
         $.ajax({
             type: 'GET',
-            url: "/api/ShoppingList",
+            url: "/api/ShoppingList/@Model.UrlEncodedShopperName",
             dataType: 'json',
-            success: function(data) {
-                var ostoslista = $("#ostoslista");
-                ostoslista.html("");
-
-                for (var i = 0; i < data.length; i++) {
-                    addItemToList(data[i]);
-                };
-            },
+            success: loadShoppingListDataSuccess,
             error: function(e) {
                 console.log("ERROR: " + e);
             }
         });
+    }
+
+    function loadShoppingListDataSuccess(data) {
+        var ostoslista = $("#ostoslista");
+        ostoslista.html("");
+
+        for (var i = 0; data && i < data.length; i++) {
+            addItemToList(data[i]);
+        };
     }
 
     $(document).ready(function () {

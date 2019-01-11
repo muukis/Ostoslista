@@ -4,7 +4,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using OstoslistaInterfaces;
 
 namespace OstoslistaData
 {
@@ -16,24 +15,49 @@ namespace OstoslistaData
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            var e = modelBuilder.Entity<ShoppingListItemEntity>();
+            var shopper = modelBuilder.Entity<ShopperEntity>();
+            shopper.InitBaseEntity();
+            shopper.Property(o => o.Name).IsRequired().HasMaxLength(50);
+            shopper.HasMany(o => o.Items).WithOne(o => o.Shopper);
 
-            e.HasKey(o => o.Id);
-            e.Property(o => o.Pending).IsRequired(false).ValueGeneratedOnAdd();
-            e.Property(o => o.Title).IsRequired().HasMaxLength(100);
-            e.Property(o => o.Created).IsRequired(false).ValueGeneratedOnAdd();
-            e.Property(o => o.Modified).IsRequired(false).ValueGeneratedOnAdd();
+            var item = modelBuilder.Entity<ShoppingListItemEntity>();
+            item.InitBaseEntity();
+            item.Property(o => o.Pending).IsRequired(false).ValueGeneratedOnAdd();
+            item.Property(o => o.Title).IsRequired().HasMaxLength(100);
+            item.Property(o => o.ShopperId).IsRequired();
+            item.HasOne(o => o.Shopper).WithMany(o => o.Items);
         }
 
+        public virtual DbSet<ShopperEntity> Ostaja { get; set; }
         public virtual DbSet<ShoppingListItemEntity> Ostoslista { get; set; }
 
-        public async Task<IEnumerable<IShoppingListItem>> FindItems(Expression<Func<IShoppingListItem, bool>> predicate)
+        public async Task<ShopperEntity> GetShopper(string shopperName)
         {
-            return await Ostoslista.Where(predicate).ToListAsync();
+            return await Ostaja.SingleAsync(o => string.Equals(o.Name, shopperName, StringComparison.InvariantCulture));
         }
 
-        public async Task<IShoppingListItem> CreateItem(string title)
+        public async Task<ShopperEntity> CreateShopper(string shopperName)
         {
+            var shopper = new ShopperEntity
+            {
+                Name = shopperName.Trim(),
+                Email = "?"
+            };
+
+            await Ostaja.AddAsync(shopper);
+            await SaveChangesAsync();
+
+            return shopper;
+        }
+
+        public async Task<IEnumerable<ShoppingListItemEntity>> FindItems(Expression<Func<ShoppingListItemEntity, bool>> predicate)
+        {
+            return await Ostoslista.Include(o => o.Shopper).Where(predicate).ToListAsync();
+        }
+
+        public async Task<ShoppingListItemEntity> CreateItem(string shopperName, string title)
+        {
+            var shopper = await GetShopper(shopperName);
             var sanitizedTitle = title.Substring(0, 1).ToUpper();
 
             if (title.Length > 1)
@@ -43,7 +67,8 @@ namespace OstoslistaData
 
             var newItem = new ShoppingListItemEntity
             {
-                Title = sanitizedTitle
+                Title = sanitizedTitle,
+                ShopperId = shopper.Id ?? Guid.Empty
             };
 
             await Ostoslista.AddAsync(newItem);
@@ -52,7 +77,7 @@ namespace OstoslistaData
             return newItem;
         }
 
-        public async Task<IShoppingListItem> UpdateItemPendingStatus(Guid id, bool isPending)
+        public async Task<ShoppingListItemEntity> UpdateItemPendingStatus(Guid id, bool isPending)
         {
             var searchResult = (await FindItems(o => o.Id == id)).ToList();
 
@@ -70,9 +95,9 @@ namespace OstoslistaData
             return shoppingListItem;
         }
 
-        public async Task<int> DeleteItems(Expression<Func<IShoppingListItem, bool>> predicate)
+        public async Task<int> DeleteItems(Expression<Func<ShoppingListItemEntity, bool>> predicate)
         {
-            var itemsToDelete = (await FindItems(predicate)).Cast<ShoppingListItemEntity>().ToList();
+            var itemsToDelete = (await FindItems(predicate)).ToList();
             Ostoslista.RemoveRange(itemsToDelete);
             return await SaveChangesAsync();
         }

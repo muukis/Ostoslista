@@ -30,6 +30,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="2.2.1" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="4.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUi" Version="4.0.1" />
   </ItemGroup>
@@ -40,7 +42,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\OstoslistaContracts\OstoslistaContracts.csproj" />
-    <ProjectReference Include="..\OstoslistaServices\OstoslistaServices.csproj" />
   </ItemGroup>
 
   <ItemGroup>
