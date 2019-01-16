@@ -90,7 +90,7 @@
             return;
         }
 
-        row.unbind();
+        row.off('click');
         var setPending = elem.hasClass("fa-check-circle");
         setItemRowAjaxRunning($(this));
 
