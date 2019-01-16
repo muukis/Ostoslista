@@ -5,6 +5,10 @@
     ViewData["Title"] = $"Tuotteet";
 }
 
+<div id="waitIndContainer" style="display: none;">
+    <div class="waitInd"><i class="fas fa-cog fa-spin"></i> Hetkinen...</div>
+</div>
+
 <div class="text-center">
     <h1>Ostoslista@(string.IsNullOrWhiteSpace(Model.ShopperName) ? "" : $" ({Model.HtmlEncodedShopperName})")</h1>
     <div id="ostolistaTuotteet" style="display: none;">
@@ -52,6 +56,9 @@
             return;
         }
 
+        var row = getTempItemRow(title);
+        row.hide().appendTo("#ostoslista").fadeIn(1000);
+
         $.ajax({
             type: 'POST',
             url: "/api/ShoppingList/@Model.UrlEncodedShopperName",
@@ -62,8 +69,9 @@
             data: JSON.stringify({
                 Title: title
             }),
-            success: function(data) {
-                addItemToList(data, true);
+            success: function (data) {
+                setItemRowValues(row, data);
+                row.click(togglePending);
                 elem.val("");
                 elem.focus();
             },
@@ -74,51 +82,97 @@
     }
 
     function togglePending() {
-        var elem = $(this).find("i");
-        var guidElement = $(this).find('input[name="tuoteId"]');
+        var row = $(this);
+        var elem = row.find('i[name="tuoteKorissa"]');
+        var guidElement = row.find('input[name="tuoteId"]');
 
         if (!elem || !guidElement) {
             return;
         }
 
+        row.unbind();
         var setPending = elem.hasClass("fa-check-circle");
+        setItemRowAjaxRunning($(this));
 
         $.ajax({
             type: 'PUT',
             url: "/api/ShoppingList/" + guidElement.val() + "/" + setPending,
             dataType: 'json',
-            success: function() {
-                if (setPending) {
-                    elem.removeClass("fa-check-circle");
-                    elem.addClass("fa-circle");
-                } else {
-                    elem.removeClass("fa-circle");
-                    elem.addClass("fa-check-circle");
-                }
+            success: function (data) {
+                setItemRowPending(row, data);
+                row.click(togglePending);
             },
             error: function(e) {
                 console.log("ERROR: " + e);
+                row.click(togglePending);
             }
         });
     }
 
-    function addItemToList(data, addPlus) {
-        var row = $('<div class="shoppingList-item-row"></div>');
-        row.prop("title", data.Title);
-        var cell1 = $('<div class="shoppingList-item-cell"></div>');
+    function setItemRowPending(row, data) {
+        var checkElem = row.find('i[name="tuoteKorissa"]');
+        checkElem.removeClass("fas");
+        checkElem.removeClass("fa-spinner");
+        checkElem.removeClass("fa-spin");
+        checkElem.addClass("far");
         if (data.Pending) {
-            cell1.append($('<i name="tuoteKorissa" class="far fa-circle"></i>'));
+            checkElem.addClass("fa-circle");
         } else {
-            cell1.append($('<i name="tuoteKorissa" class="far fa-check-circle"></i>'));
+            checkElem.addClass("fa-check-circle");
         }
-        row.append(cell1);
+    }
+
+    function setItemRowAjaxRunning(row) {
+        var checkElem = row.find('i[name="tuoteKorissa"]');
+        checkElem.removeClass("far");
+        checkElem.removeClass("fa-circle");
+        checkElem.removeClass("fa-check-circle");
+        checkElem.addClass("fas");
+        checkElem.addClass("fa-spinner");
+        checkElem.addClass("fa-spin");
+    }
+
+    function setItemRowValues(row, data) {
+        row.prop("title", data.Title);
+        var idElem = row.find('input[name="tuoteId"]');
+        idElem.val(data.Id);
+        var checkElem = row.find('i[name="tuoteKorissa"]');
+        checkElem.removeClass("fas");
+        checkElem.removeClass("fa-spinner");
+        checkElem.removeClass("fa-spin");
+        checkElem.addClass("far");
+        checkElem.addClass("fa-circle");
+    }
+
+    function getItemRow(iconElem, title, itemId, addPlus) {
+        var row = $('<div class="shoppingList-item-row"></div>');
+        row.prop("title", title);
+        row.append(iconElem);
         var cell2 = $('<div class="shoppingList-item-cell"></div>');
-        cell2.append($('<span style="margin-left: 10px"></span>').text(data.Title));
-        cell2.append($('<input type="hidden" name="tuoteId"/>').val(data.Id));
+        cell2.append($('<span style="margin-left: 10px"></span>').text(title));
+        cell2.append($('<input type="hidden" name="tuoteId"/>').val(itemId));
         if (addPlus) {
-            cell2.append($('<i class="fa fa-plus-circle shoppingList-item-new" aria-hidden="true"></i>').val(data.Id));
+            cell2.append($('<i class="fa fa-plus-circle shoppingList-item-new" aria-hidden="true"></i>'));
         }
         row.append(cell2);
+        return row;
+    }
+
+    function getTempItemRow(title) {
+        var iconElem = $('<div class="shoppingList-item-cell"></div>');
+        iconElem.append($('<i name="tuoteKorissa" class="fas fa-spinner fa-spin"></i>'));
+        return getItemRow(iconElem, title, "", true);
+    }
+
+    function addItemToList(data, addPlus) {
+        var iconElem = $('<div class="shoppingList-item-cell"></div>');
+        if (data.Pending) {
+            iconElem.append($('<i name="tuoteKorissa" class="far fa-circle"></i>'));
+        } else {
+            iconElem.append($('<i name="tuoteKorissa" class="far fa-check-circle"></i>'));
+        }
+
+        var row = getItemRow(iconElem, data.Title, data.Id, addPlus);
         row.click(togglePending);
         row.hide().appendTo("#ostoslista").fadeIn(1000);
     }
@@ -150,6 +204,7 @@
 
         elem.show();
 
+        $.blockUI({ message: $('#waitIndContainer') });
         $.ajax({
             type: 'GET',
             url: "/api/ShoppingList/@Model.UrlEncodedShopperName",
@@ -172,17 +227,17 @@
 
     $(document).ready(function () {
         $.blockUI.defaults.css = {};
-
-        $.ajaxSetup({
-            beforeSend: function() {
-                $.blockUI({
-                    message: '<div id="waitIndContainer"><div class="waitInd"><i class="fas fa-cog fa-spin"></i> Hetkinen...</div></div>'
-                });
-            },
-            complete: function () {
-                $.unblockUI();
-            }
-        });
+        $(document).ajaxStop($.unblockUI);
+        //$.ajaxSetup({
+        //    beforeSend: function() {
+        //        $.blockUI({
+        //            message: $("#waitIndContainer")
+        //        });
+        //    },
+        //    complete: function () {
+        //        $.unblockUI();
+        //    }
+        //});
 
         loadShoppingListData();
     });
