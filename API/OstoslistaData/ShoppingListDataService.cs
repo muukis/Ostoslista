@@ -95,11 +95,12 @@ namespace OstoslistaData
             return shoppingListItem;
         }
 
-        public async Task<int> DeleteItems(Expression<Func<ShoppingListItemEntity, bool>> predicate)
+        public async Task<IEnumerable<ShoppingListItemEntity>> DeleteItems(Expression<Func<ShoppingListItemEntity, bool>> predicate)
         {
             var itemsToDelete = (await FindItems(predicate)).ToList();
             Ostoslista.RemoveRange(itemsToDelete);
-            return await SaveChangesAsync();
+            await SaveChangesAsync();
+            return itemsToDelete;
         }
     }
 }

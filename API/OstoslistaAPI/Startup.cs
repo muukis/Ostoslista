@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.PlatformAbstractions;
 using Newtonsoft.Json.Serialization;
+using OstoslistaAPI.Hubs;
 using OstoslistaData;
 using Swashbuckle.AspNetCore.Swagger;
 
@@ -104,6 +105,8 @@ namespace OstoslistaAPI
                 options.Cookie.Name = ".ShoppingList.Session";
                 options.IdleTimeout = TimeSpan.FromDays(365);
             });
+
+            services.AddSignalR();
         }
 
         /// <summary>
@@ -120,6 +123,10 @@ namespace OstoslistaAPI
 
             app.UseStaticFiles();
             app.UseSession();
+            app.UseSignalR(routes =>
+            {
+                routes.MapHub<ShoppingListHub>("/shoppingListHub");
+            });
             app.UseMvc();
 
             app.UseSwagger();

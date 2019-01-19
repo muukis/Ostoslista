@@ -39,7 +39,7 @@ namespace OstoslistaData
             return await _dataService.UpdateItemPendingStatus(id, isPending);
         }
 
-        public async Task<int> DeleteItems(Expression<Func<ShoppingListItemEntity, bool>> predicate)
+        public async Task<IEnumerable<ShoppingListItemEntity>> DeleteItems(Expression<Func<ShoppingListItemEntity, bool>> predicate)
         {
             return await _dataService.DeleteItems(predicate);
         }

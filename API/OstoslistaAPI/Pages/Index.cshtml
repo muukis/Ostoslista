@@ -27,9 +27,6 @@
             type: 'DELETE',
             url: "/api/ShoppingList/@Model.UrlEncodedShopperName/unpending",
             dataType: 'json',
-            success: function() {
-                loadShoppingListData();
-            },
             error: function(e) {
                 console.log("ERROR: " + e);
             }
@@ -56,9 +53,6 @@
             return;
         }
 
-        var row = getTempItemRow(title);
-        row.hide().appendTo("#ostoslista").fadeIn(1000);
-
         $.ajax({
             type: 'POST',
             url: "/api/ShoppingList/@Model.UrlEncodedShopperName",
@@ -69,9 +63,7 @@
             data: JSON.stringify({
                 Title: title
             }),
-            success: function (data) {
-                setItemRowValues(row, data);
-                row.click(togglePending);
+            success: function () {
                 elem.val("");
                 elem.focus();
             },
@@ -98,10 +90,6 @@
             type: 'PUT',
             url: "/api/ShoppingList/" + guidElement.val() + "/" + setPending,
             dataType: 'json',
-            success: function (data) {
-                setItemRowPending(row, data);
-                row.click(togglePending);
-            },
             error: function(e) {
                 console.log("ERROR: " + e);
                 row.click(togglePending);
@@ -109,17 +97,25 @@
         });
     }
 
-    function setItemRowPending(row, data) {
+    function setItemRowPending(row, isPending) {
+        console.log("setItemRowPending " + isPending);
         var checkElem = row.find('i[name="tuoteKorissa"]');
         checkElem.removeClass("fas");
         checkElem.removeClass("fa-spinner");
         checkElem.removeClass("fa-spin");
+        checkElem.removeClass("far");
+        checkElem.removeClass("fa-circle");
+        checkElem.removeClass("fa-check-circle");
         checkElem.addClass("far");
-        if (data.Pending) {
+        if (isPending) {
             checkElem.addClass("fa-circle");
         } else {
             checkElem.addClass("fa-check-circle");
         }
+    }
+
+    function setItemRowPendingFromData(row, data) {
+        setItemRowPending(row, data.Pending);
     }
 
     function setItemRowAjaxRunning(row) {
@@ -132,10 +128,10 @@
         checkElem.addClass("fa-spin");
     }
 
-    function setItemRowValues(row, data) {
-        row.prop("title", data.Title);
+    function setItemRowValues(row, title, itemId) {
+        row.prop("title", title);
         var idElem = row.find('input[name="tuoteId"]');
-        idElem.val(data.Id);
+        idElem.val(itemId);
         var checkElem = row.find('i[name="tuoteKorissa"]');
         checkElem.removeClass("fas");
         checkElem.removeClass("fa-spinner");
@@ -144,7 +140,16 @@
         checkElem.addClass("fa-circle");
     }
 
-    function getItemRow(iconElem, title, itemId, addPlus) {
+    function setItemRowDataValues(row, data) {
+        setItemRowValues(row, data.Title, data.Id);
+    }
+
+    function findRow(itemId) {
+        var elem = $("#ostolistaTuotteet");
+        return elem.find('input[name="tuoteId"][value="' + itemId + '"]').parents('div.shoppingList-item-row');
+    }
+
+    function createItemRow(iconElem, title, itemId, addPlus) {
         var row = $('<div class="shoppingList-item-row"></div>');
         row.prop("title", title);
         row.append(iconElem);
@@ -161,18 +166,22 @@
     function getTempItemRow(title) {
         var iconElem = $('<div class="shoppingList-item-cell"></div>');
         iconElem.append($('<i name="tuoteKorissa" class="fas fa-spinner fa-spin"></i>'));
-        return getItemRow(iconElem, title, "", true);
+        return createItemRow(iconElem, title, "", true);
     }
 
-    function addItemToList(data, addPlus) {
+    function createDefaultCheckBoxElement(isPending) {
         var iconElem = $('<div class="shoppingList-item-cell"></div>');
-        if (data.Pending) {
+        if (isPending) {
             iconElem.append($('<i name="tuoteKorissa" class="far fa-circle"></i>'));
         } else {
             iconElem.append($('<i name="tuoteKorissa" class="far fa-check-circle"></i>'));
         }
+        return iconElem;
+    }
 
-        var row = getItemRow(iconElem, data.Title, data.Id, addPlus);
+    function addItemToList(data, addPlus) {
+        var iconElem = createDefaultCheckBoxElement(data.Pending);
+        var row = createItemRow(iconElem, data.Title, data.Id, addPlus);
         row.click(togglePending);
         row.hide().appendTo("#ostoslista").fadeIn(1000);
     }
@@ -228,17 +237,38 @@
     $(document).ready(function () {
         $.blockUI.defaults.css = {};
         $(document).ajaxStop($.unblockUI);
-        //$.ajaxSetup({
-        //    beforeSend: function() {
-        //        $.blockUI({
-        //            message: $("#waitIndContainer")
-        //        });
-        //    },
-        //    complete: function () {
-        //        $.unblockUI();
-        //    }
-        //});
-
         loadShoppingListData();
+
+        var connection = new signalR.HubConnectionBuilder().withUrl("/shoppingListHub").build();
+        connection.on("NewItemCreated", function (itemId, title, isPending) {
+            var row = findRow(itemId);
+
+            if (row.length !== 1) {
+                var iconElem = createDefaultCheckBoxElement(isPending);
+                row = createItemRow(iconElem, title, itemId, true);
+                row.click(togglePending);
+                row.hide().appendTo("#ostoslista").fadeIn(1000);
+            }
+        });
+        connection.on("ItemPendingChanged", function (itemId, isPending) {
+            var row = findRow(itemId);
+
+            if (row.length === 1) {
+                setItemRowPending(row, isPending);
+                row.click(togglePending);
+            }
+        });
+        connection.on("RemoveItem", function (itemId) {
+            var row = findRow(itemId);
+
+            if (row.length === 1) {
+                row.fadeOut(1000, function () { $(this).remove(); });
+            }
+        });
+        if (@(Model.ShopperName?.Length ?? 0) > 0) {
+            connection.start().then(() => {
+                connection.invoke("RegisterShopper", "@Model.ShopperName").catch(err => console.error(err.toString()));
+            });
+        }
     });
 </script>

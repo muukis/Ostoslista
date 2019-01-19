@@ -1,8 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OstoslistaContracts;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR;
+using OstoslistaAPI.Hubs;
 using OstoslistaData;
 
 namespace OstoslistaAPI.Controllers
@@ -15,14 +18,16 @@ namespace OstoslistaAPI.Controllers
     public class ShoppingListController : BaseController
     {
         private readonly IShoppingListService _service;
+        private readonly IHubContext<ShoppingListHub, IMessages> _hubContext;
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="service"></param>
-        public ShoppingListController(IShoppingListService service)
+        public ShoppingListController(IShoppingListService service, IHubContext<ShoppingListHub, IMessages> hubContext)
         {
             _service = service;
+            _hubContext = hubContext;
         }
 
         /// <summary>
@@ -187,7 +192,14 @@ namespace OstoslistaAPI.Controllers
                     });
                 }
 
-                return Ok((await _service.CreateItem(shopperName, title.Trim())).ToResult());
+                var retval = (await _service.CreateItem(shopperName, title.Trim())).ToResult();
+
+                if (retval != null)
+                {
+                    await _hubContext.Clients.Group(retval.ShopperName).NewItemCreated(retval.Id, retval.Title, retval.Pending);
+                }
+
+                return Ok(retval);
             }
             catch (Exception)
             {
@@ -218,7 +230,14 @@ namespace OstoslistaAPI.Controllers
         {
             try
             {
-                return Ok((await _service.UpdateItemPendingStatus(shoppingListItemId, pending)).ToResult());
+                var retval = (await _service.UpdateItemPendingStatus(shoppingListItemId, pending)).ToResult();
+
+                if (retval != null)
+                {
+                    await _hubContext.Clients.Group(retval.ShopperName).ItemPendingChanged(retval.Id, retval.Pending);
+                }
+
+                return Ok(retval);
             }
             catch (Exception)
             {
@@ -248,8 +267,9 @@ namespace OstoslistaAPI.Controllers
         {
             try
             {
-                int count = await _service.DeleteItems(o => o.Id == shoppingListItemId);
-                return Ok(count);
+                var items = (await _service.DeleteItems(o => o.Id == shoppingListItemId)).ToList();
+                await SendDeleteMessageToHub(items);
+                return Ok(items.Count);
             }
             catch (Exception)
             {
@@ -259,6 +279,22 @@ namespace OstoslistaAPI.Controllers
                     Classification = ErrorClassification.InternalError,
                     Message = "Failed deleting shopping list item"
                 });
+            }
+        }
+
+        private async Task SendDeleteMessageToHub(List<ShoppingListItemEntity> items)
+        {
+            if (items?.Count > 0)
+            {
+                foreach (var item in items)
+                {
+                    if (!item.Id.HasValue)
+                    {
+                        continue;
+                    }
+
+                    await _hubContext.Clients.Group(item.Shopper.Name).RemoveItem(item.Id.Value);
+                }
             }
         }
 
@@ -279,8 +315,9 @@ namespace OstoslistaAPI.Controllers
         {
             try
             {
-                int count = await _service.DeleteItems(o => string.Equals(o.Shopper.Name, shopperName, StringComparison.InvariantCulture) && o.Pending == false);
-                return Ok(count);
+                var items = (await _service.DeleteItems(o => string.Equals(o.Shopper.Name, shopperName, StringComparison.InvariantCulture) && o.Pending == false)).ToList();
+                await SendDeleteMessageToHub(items);
+                return Ok(items.Count);
             }
             catch (Exception)
             {
