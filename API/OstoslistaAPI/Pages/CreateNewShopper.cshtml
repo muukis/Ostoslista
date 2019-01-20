@@ -5,7 +5,7 @@
 }
 
 <div class="text-center">
-    <h1>Luo uusi ostoslista</h1>
+    <h1><i class="fa fa-plus-circle"></i> Luo uusi ostoslista</h1>
     <div>
         Syötä ostoslistan yksilöllinen nimi:&nbsp;
         <input type="text"
@@ -15,7 +15,7 @@
                title="Syötä ostoslistan yksilöllinen nimi"
                class="newItem"
                value="@Model.GetRandomShopperName()" />&nbsp;
-        <input type="button" value="Lähetä" onclick="sendNew();" class="buttons" />
+        <input type="button" value="Luo" onclick="sendNew();" class="buttons" />
     </div>
 </div>
 
@@ -65,7 +65,7 @@
         $.ajaxSetup({
             beforeSend: function () {
                 $.blockUI({
-                    message: '<div id="waitIndContainer"><div class="waitInd"><i class="fas fa-cog fa-spin"></i> Hetkinen...</div></div>'
+                    message: $('#waitIndContainer')
                 });
             },
             complete: function () {

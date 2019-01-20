@@ -2,15 +2,11 @@
 @using System.Web
 @model OstoslistaAPI.Pages.IndexModel
 @{
-    ViewData["Title"] = $"Tuotteet";
+    ViewData["Title"] = "Tuotteet";
 }
 
-<div id="waitIndContainer" style="display: none;">
-    <div class="waitInd"><i class="fas fa-cog fa-spin"></i> Hetkinen...</div>
-</div>
-
 <div class="text-center">
-    <h1>Ostoslista@(string.IsNullOrWhiteSpace(Model.ShopperName) ? "" : $" ({Model.HtmlEncodedShopperName})")</h1>
+    <h1><i class="fas fa-shopping-basket"></i> Ostoslista@(string.IsNullOrWhiteSpace(Model.ShopperName) ? "" : $" ({Model.HtmlEncodedShopperName})")</h1>
     <div id="ostolistaTuotteet" style="display: none;">
         <div>
             <input type="text" id="uusiTuote" placeholder="Syötä uusi tuote..." onkeypress="return keyPress(event, sendNew);" class="newItem"/>&nbsp;
@@ -26,11 +22,12 @@
     connection.serverTimeoutInMilliseconds = 60 * 60 * 1000;
 
     function buyCheckedItems() {
+        $.blockUI({ message: $('#waitIndContainer') });
         $.ajax({
             type: 'DELETE',
             url: "/api/ShoppingList/@Model.UrlEncodedShopperName/unpending",
             dataType: 'json',
-            success: function () { checkConnectionState(); },
+            success: checkConnectionState,
             error: function (e) {
                 console.log("ERROR: " + e);
             }
@@ -68,7 +65,7 @@
                 Title: title
             }),
             success: function () {
-                connectionState();
+                checkConnectionState();
                 elem.val("");
                 elem.focus();
             },
@@ -95,7 +92,7 @@
             type: 'PUT',
             url: "/api/ShoppingList/" + guidElement.val() + "/" + setPending,
             dataType: 'json',
-            success: function () { checkConnectionState(); },
+            success: checkConnectionState,
             error: function(e) {
                 console.log("ERROR: " + e);
                 row.click(togglePending);
@@ -241,7 +238,7 @@
     }
 
     function checkConnectionState() {
-        var stateConversion = {0: 'connecting', 1: 'connected', 2: 'reconnecting', 4: 'disconnected'};
+        //var stateConversion = {0: 'connecting', 1: 'connected', 2: 'reconnecting', 4: 'disconnected'};
         //console.log('SignalR connection state: ' + stateConversion[connection.state]);
 
         if (connection.state !== 1) {

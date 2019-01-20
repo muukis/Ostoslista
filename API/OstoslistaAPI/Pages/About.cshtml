@@ -1,0 +1,88 @@
+﻿@page
+@model OstoslistaAPI.Pages.AboutModel
+@{
+    ViewData["Title"] = "Tietoa ostoslistasta";
+}
+
+<div id="tietoa" class="text-center">
+    <h1><i class="fas fa-question-circle"></i> Tietoa ostoslistasta</h1>
+    <div class="about">
+        <a href="#how">Miten tätä käytetään?</a><br />
+        <a href="#why">Miksi ostoslista?</a><br />
+        <a href="#tasker">Mikä on Android Tasker?</a><br />
+        <a href="#code">Miten ostoslista on tehty?</a><br />
+    </div>
+    <div class="about">
+        <a id="how"></a>
+        <h3>Miten tätä käytetään?</h3>
+        <p>
+            Jos et jo ole luonut itsellesi uutta ostoskoria, tee se ensin. Voit käyttää
+            ostoskorin nimenä joko ehdotettua satunnaisgeneroitua merkkijonopätkää,
+            tai vaihtoehtoisesti käyttämällä jotain tuttua merkkijonoa tyyliin
+            "JermunMuonat". Huomaa, että kirjain koolla on merkitystä. Listaa ei siis
+            pääse katsomaan nimellä "Jermunmuonat", koska muonat alkaa ostoslistan
+            oikein kirjoitetussa nimessä isolla kirjaimella.
+            Sen jälkeen voit tallentaa avautuvan listan kirjamerkkeihin ja palata samaan
+            listaan kirjamerkistä. Jos haluat jakaa listan jollekin, voit antaa joko
+            kirjamerkin osoitteen tai antamalla ostoslistasi nimen. Nimen voi syöttää
+            tekstikenttään silloin kun sivulle tulee ilman valmista linkkiä ostoslistaan.
+        </p>
+        <p>
+            Voit lisätä uusia tuotteita kirjoittamalla ensin tekstikenttään tuotteen
+            nimen ja painamalla lähetä nappia. Tuote näkyy sen jälkeen ostoslistassa.
+        </p>
+        <p>
+            Merkitse ostoskoriisi tai -kärryihin nostamasi tuote painamalla tuotetta
+            ostoslistan ruudulla. Väkäsellä merkityt tuotteet ovat siis jo mukanasi.
+        </p>
+        <p>
+            Kassan jälkeen paina vielä Maksa valitut tuotteen -nappia, jolloin väkäsellä
+            merkityt tuotteet poistuvat ostoslistaltasi.
+        </p>
+        <p>
+            Kaikki ostoslistamuutokset näkyvät välittömästi myös muilla samaa listaa
+            katsovien ruuduilla.
+        </p>
+        <a id="why"></a>
+        <h3>Miksi ostoslista?</h3>
+        <p>
+            No siksi, että muistaisin mitä kaupasta täytyy ostaa.
+            Paperinen versio jäi minulta usein kotiin tai täytin sen juuri ennen kauppaan menoa,
+            jolloin moni aikaisemmin ajattelemani tarvitsemani asia jäi pois listasta.
+            Tällä voin helposti lisätä tarvitsemani asiat joko kännykällä tai tietokoneella
+            heti kun huomaan, että jotain täytyy ostaa tai alkaa olla loppumassa.
+        </p>
+        <p>
+            Toinen tärkeä syy, miksi ostoslistaa lähdin tekemään oli se, että perhe voi hajaantua
+            kauppaan omien ostoskorien ja -kärryjen kanssa, avaamalla saman ostoslistan
+            kännykkäänsä. Kun joku laittaa jonkun ostoslistan tuotteen kärryynsä, voi hän
+            merkitä tuotteen väkäsellä, jolloin kaikkien samaa listaa katsovien näkymä
+            päivittyy välittömästi.
+        </p>
+        <p>
+            Kolmas syy oli siksi, että halusin jääkaappini oveen digitaalisen näytön, jossa
+            ePaperilla näkyy ostoslistani ja kalenterimerkinnät. Ehkä joskus tulevaisuudessa
+            lisään siihen napin ja mikrofonin, jolloin voin puhua sille ostoslistaan
+            lisättävät tuotteet?
+        </p>
+        <a id="tasker"></a>
+        <h3>Mikä on Android Tasker?</h3>
+        <p>
+            <a href="https://play.google.com/store/apps/details?id=net.dinglisch.android.taskerm" target="_blank">Android Tasker</a>
+            on sovellus Android puhelimille, jolla voi automatisoida puhelimen toimintoja.
+            Ostoslistan tekeminen lähti oikeastaan innostuksesta Taskerin ominaisuuksiin.
+            Unelmani on, että voin sanoa "jääkaapille" mitä pitää ostaa. Taskerin ansiosta
+            riittää että sanon puhelimeen "osta maitoa", jolloin ostoslistaan lisätään
+            uusi merkintä "Maitoa".
+        </p>
+        <a id="code"></a>
+        <h3>Miten ostoslista on tehty?</h3>
+        <p>
+            Ostoslista on ohjelmoitu Microsoft Visual Studio 2017 sovelluksella, C# kielellä
+            ja <a href="https://docs.microsoft.com/en-us/aspnet/core/?view=aspnetcore-2.2" target="_blank">ASP.NET Corella</a>.
+            Avoin lähdekoodi on luettavissa ja ladattavissa
+            <a href="https://github.com/muukis/Ostoslista" target="_blank">GitHubissa</a>.
+        </p>
+    </div>
+</div>
+

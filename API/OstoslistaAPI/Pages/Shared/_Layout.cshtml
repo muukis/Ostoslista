@@ -72,6 +72,14 @@
         padding-top: 15px;
     }
 
+    .about {
+        font-size: 12pt;
+        text-align: left;
+        display: table;
+        margin: auto;
+        padding-top: 15px;
+    }
+
     .buyCheckedItems {
         margin-top: 30px;
     }
@@ -120,7 +128,7 @@
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-page="/Index">
-                                <i class="fas fa-shopping-basket"></i></i> Tuotteet
+                                <i class="fas fa-shopping-basket"></i> Tuotteet
                             </a>
                         </li>
                         <li class="nav-item">
@@ -129,6 +137,11 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-page="/About">
+                                <i class="fas fa-question-circle"></i> Tietoa ostoslistasta
+                            </a>
+                        </li>
+                        <li class="nav-item" style="display: none;">
                             <a class="nav-link text-dark" href="/swagger" target="_top">
                                 <i class="fa fa-plug"></i> Swagger
                             </a>
@@ -138,6 +151,11 @@
             </div>
         </nav>
     </header>
+
+    <div id="waitIndContainer" style="display: none;">
+        <div class="waitInd"><i class="fas fa-cog fa-spin"></i> Hetkinen...</div>
+    </div>
+
     <div class="container">
         <partial name="_CookieConsentPartial" />
         <main role="main" class="pb-3">
