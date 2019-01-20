@@ -22,12 +22,16 @@
 </div>
 
 <script type="text/javascript">
+    var connection = new signalR.HubConnectionBuilder().withUrl("/shoppingListHub").build();
+    connection.serverTimeoutInMilliseconds = 60 * 60 * 1000;
+
     function buyCheckedItems() {
         $.ajax({
             type: 'DELETE',
             url: "/api/ShoppingList/@Model.UrlEncodedShopperName/unpending",
             dataType: 'json',
-            error: function(e) {
+            success: function () { checkConnectionState(); },
+            error: function (e) {
                 console.log("ERROR: " + e);
             }
         });
@@ -64,6 +68,7 @@
                 Title: title
             }),
             success: function () {
+                connectionState();
                 elem.val("");
                 elem.focus();
             },
@@ -90,6 +95,7 @@
             type: 'PUT',
             url: "/api/ShoppingList/" + guidElement.val() + "/" + setPending,
             dataType: 'json',
+            success: function () { checkConnectionState(); },
             error: function(e) {
                 console.log("ERROR: " + e);
                 row.click(togglePending);
@@ -98,7 +104,7 @@
     }
 
     function setItemRowPending(row, isPending) {
-        console.log("setItemRowPending " + isPending);
+        //console.log("setItemRowPending " + isPending);
         var checkElem = row.find('i[name="tuoteKorissa"]');
         checkElem.removeClass("fas");
         checkElem.removeClass("fa-spinner");
@@ -234,12 +240,30 @@
         };
     }
 
+    function checkConnectionState() {
+        var stateConversion = {0: 'connecting', 1: 'connected', 2: 'reconnecting', 4: 'disconnected'};
+        //console.log('SignalR connection state: ' + stateConversion[connection.state]);
+
+        if (connection.state !== 1) {
+            $.blockUI({ message: $('#waitIndContainer') });
+            window.location = window.location;
+        }
+    }
+
+    function reconnectToHub() {
+        if (@(Model.ShopperName?.Length ?? 0) > 0) {
+            console.log('Reconnecting to the hub...');
+            connection.start().then(() => {
+                connection.invoke("RegisterShopper", "@Model.ShopperName").catch(err => console.error(err.toString()));
+            });
+        }
+    }
+
     $(document).ready(function () {
         $.blockUI.defaults.css = {};
         $(document).ajaxStop($.unblockUI);
         loadShoppingListData();
 
-        var connection = new signalR.HubConnectionBuilder().withUrl("/shoppingListHub").build();
         connection.on("NewItemCreated", function (itemId, title, isPending) {
             var row = findRow(itemId);
 
@@ -265,10 +289,9 @@
                 row.fadeOut(1000, function () { $(this).remove(); });
             }
         });
-        if (@(Model.ShopperName?.Length ?? 0) > 0) {
-            connection.start().then(() => {
-                connection.invoke("RegisterShopper", "@Model.ShopperName").catch(err => console.error(err.toString()));
-            });
-        }
+        connection.onclose(function(e) {
+            reconnectToHub();
+        });
+        reconnectToHub();
     });
 </script>
