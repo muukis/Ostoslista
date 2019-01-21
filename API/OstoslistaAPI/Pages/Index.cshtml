@@ -251,7 +251,7 @@
         if (@(Model.ShopperName?.Length ?? 0) > 0) {
             console.log('Reconnecting to the hub...');
             connection.start().then(() => {
-                connection.invoke("RegisterShopper", "@Model.ShopperName").catch(err => console.error(err.toString()));
+                connection.invoke("RegisterShopper", "@Model.EscapedShopperName").catch(err => console.error(err.toString()));
             });
         }
     }
@@ -286,9 +286,13 @@
                 row.fadeOut(1000, function () { $(this).remove(); });
             }
         });
-        connection.onclose(function(e) {
+        connection.onclose(function() {
             reconnectToHub();
         });
         reconnectToHub();
+    });
+
+    $(window).on('beforeunload', function () {
+        connection.stop();
     });
 </script>

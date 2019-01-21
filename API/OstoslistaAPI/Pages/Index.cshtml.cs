@@ -30,6 +30,11 @@ namespace OstoslistaAPI.Pages
         /// <summary>
         /// 
         /// </summary>
+        public string EscapedShopperName => (ShopperName ?? string.Empty).Replace(@"\", @"\\").Replace("\"", "\\\"");
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="shopperName"></param>
         public void OnGet([FromQuery(Name = "lista")] string shopperName)
         {
