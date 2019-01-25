@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using OstoslistaAPI.Hubs;
 using OstoslistaData;
@@ -15,6 +16,7 @@ namespace OstoslistaAPI.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [Produces("application/json")]
+    [AllowAnonymous]
     public class ShoppingListController : BaseController
     {
         private readonly IShoppingListService _service;

@@ -1,14 +1,16 @@
 ﻿using System.Web;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
+using OstoslistaAPI.Models;
 
 namespace OstoslistaAPI.Pages
 {
     /// <summary>
     /// 
     /// </summary>
-    public class IndexModel : PageModel
+    [AllowAnonymous]
+    public class IndexModel : PageBaseModel
     {
         private const string shopperNameKey = "shopperName";
 
@@ -36,12 +38,14 @@ namespace OstoslistaAPI.Pages
         /// 
         /// </summary>
         /// <param name="shopperName"></param>
-        public void OnGet([FromQuery(Name = "lista")] string shopperName)
+        public IActionResult OnGet([FromQuery(Name = "lista")] string shopperName)
         {
             if (shopperName != null)
             {
                 HttpContext.Session.SetString(shopperNameKey, shopperName);
             }
+
+            return Page();
         }
     }
 }
