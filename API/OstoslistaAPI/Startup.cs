@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Security.Claims;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -66,6 +69,16 @@ namespace OstoslistaAPI
                 {
                     googleOptions.ClientId = Configuration["Authentication:Google:ClientId"];
                     googleOptions.ClientSecret = Configuration["Authentication:Google:ClientSecret"];
+                    googleOptions.Events = new OAuthEvents
+                    {
+                        OnCreatingTicket = context =>
+                        {
+                            var identity = (ClaimsIdentity) context.Principal.Identity;
+                            var profileImg = context.User["image"].Value<string>("url");
+                            identity.AddClaim(new Claim("profileImg", profileImg));
+                            return Task.FromResult(0);
+                        }
+                    };
                 }).AddCookie();
 
             // Add framework services.

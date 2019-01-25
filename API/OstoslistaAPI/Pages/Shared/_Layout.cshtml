@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using OstoslistaAPI.Common
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -111,6 +112,18 @@
         color: green;
         margin-left: 10px;
     }
+
+    .noBreak {
+        white-space: nowrap;
+    }
+
+    li {
+        white-space: nowrap;
+    }
+
+    img.profile {
+        border-radius: 50%;
+    }
 </style>
 
 </head>
@@ -118,19 +131,21 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container">
-                <i class="fas fa-shopping-cart fa-2x"></i>&nbsp;
-                <a class="navbar-brand" asp-area="" asp-page="/Index">Ostoslista</a>
+                <i class="fas fa-shopping-cart fa-2x" style="margin-right: 5px;"></i>
+                <a class="navbar-brand" asp-area="" asp-page="/Index">
+                    <span class="noBreak">Ostoslista</span>
+                </a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
+                <div class="navbar-collapse collapse justify-content-between">
+                    <ul class="navbar-nav mr-auto">
+                        @*<li class="nav-item active">
                             <a class="nav-link text-dark" asp-area="" asp-page="/Index">
                                 <i class="fas fa-shopping-basket"></i> Tuotteet
                             </a>
-                        </li>
+                        </li>*@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-page="/CreateNewShopper">
                                 <i class="fa fa-plus-circle"></i> Luo uusi ostoslista
@@ -141,11 +156,40 @@
                                 <i class="fas fa-question-circle"></i> Tietoa ostoslistasta
                             </a>
                         </li>
-                        <li class="nav-item" style="display: none;">
+                        @*<li class="nav-item">
                             <a class="nav-link text-dark" href="/swagger" target="_top">
                                 <i class="fa fa-plug"></i> Swagger
                             </a>
-                        </li>
+                        </li>*@
+                    </ul>
+                    <ul class="navbar-nav">
+                        @{
+                            if (User.Identity.IsAuthenticated)
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <img src="@User.GetUserImageUrl()" class="profile" /> @User.Identity.Name
+                                    </a>
+                                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                        <a class="nav-link text-dark" asp-area="" asp-page="/MyShoppers" title="Kirjaudu sisään Google tunnuksillasi">
+                                            <i class="fas fa-search"></i> Minun ostoslistani
+                                        </a>
+                                        <div class="dropdown-divider"></div>
+                                        <a class="nav-link text-dark" asp-area="" asp-page="/Logout" title="Kirjaudu sisään Google tunnuksillasi">
+                                            <i class="fas fa-sign-out-alt"></i> Kirjaudu ulos
+                                        </a>
+                                    </div>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-page="/Login" title="Kirjaudu sisään Google tunnuksillasi">
+                                        <i class="fas fa-sign-in-alt"></i> Kirjaudu sisään
+                                    </a>
+                                </li>
+                            }
+                        }
                     </ul>
                 </div>
             </div>
@@ -157,7 +201,6 @@
     </div>
 
     <div class="container">
-        <partial name="_CookieConsentPartial" />
         <main role="main" class="pb-3">
             @RenderBody()
         </main>

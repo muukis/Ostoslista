@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Newtonsoft.Json;
+using OstoslistaAPI.Models;
 
 namespace OstoslistaAPI.Pages
 {
@@ -7,7 +10,7 @@ namespace OstoslistaAPI.Pages
     /// 
     /// </summary>
     [Authorize]
-    public class LoginModel : PageModel
+    public class LoginModel : PageBaseModel
     {
         /// <summary>
         /// 

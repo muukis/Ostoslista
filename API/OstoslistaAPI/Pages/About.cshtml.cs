@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using OstoslistaAPI.Models;
 
 namespace OstoslistaAPI.Pages
 {
@@ -7,7 +8,7 @@ namespace OstoslistaAPI.Pages
     /// 
     /// </summary>
     [AllowAnonymous]
-    public class AboutModel : PageModel
+    public class AboutModel : PageBaseModel
     {
         /// <summary>
         /// 

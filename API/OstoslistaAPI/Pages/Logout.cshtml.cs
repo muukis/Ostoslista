@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.RazorPages;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using OstoslistaAPI.Models;
 
 namespace OstoslistaAPI.Pages
 {
@@ -7,14 +8,14 @@ namespace OstoslistaAPI.Pages
     /// 
     /// </summary>
     [AllowAnonymous]
-    public class LogoutModel : PageModel
+    public class LogoutModel : PageBaseModel
     {
         /// <summary>
         /// 
         /// </summary>
-        public void OnGet()
+        public async void OnGet()
         {
-            //HttpContext.Session.Clear();
+            await HttpContext.SignOutAsync();
             Response.Redirect("/");
         }
     }

@@ -2,6 +2,7 @@
 using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using OstoslistaAPI.Models;
 
 namespace OstoslistaAPI.Pages
 {
@@ -9,7 +10,7 @@ namespace OstoslistaAPI.Pages
     /// 
     /// </summary>
     [AllowAnonymous]
-    public class CreateNewShopperModel : PageModel
+    public class CreateNewShopperModel : PageBaseModel
     {
         private static readonly Random _random = new Random();
 
