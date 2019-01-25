@@ -48,9 +48,6 @@
     <Content Update="wwwroot\css\site.css">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
-    <Content Update="wwwroot\favicon.ico">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Content>
     <Content Update="wwwroot\js\site.js">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>

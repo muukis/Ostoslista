@@ -7,14 +7,15 @@ namespace OstoslistaAPI.Pages
     /// 
     /// </summary>
     [AllowAnonymous]
-    public class AboutModel : PageModel
+    public class LogoutModel : PageModel
     {
         /// <summary>
         /// 
         /// </summary>
         public void OnGet()
         {
-
+            //HttpContext.Session.Clear();
+            Response.Redirect("/");
         }
     }
 }

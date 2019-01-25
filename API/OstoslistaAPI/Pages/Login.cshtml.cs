@@ -6,15 +6,15 @@ namespace OstoslistaAPI.Pages
     /// <summary>
     /// 
     /// </summary>
-    [AllowAnonymous]
-    public class AboutModel : PageModel
+    [Authorize]
+    public class LoginModel : PageModel
     {
         /// <summary>
         /// 
         /// </summary>
         public void OnGet()
         {
-
+            Response.Redirect("/");
         }
     }
 }
