@@ -63,9 +63,9 @@ namespace OstoslistaAPI.Common
                    (shopper.PublicReadAccess ?? false) ||
                    (shopper.PublicWriteAccess ?? false) ||
                    string.Equals(shopper.Email, userEmailAddressId, StringComparison.InvariantCultureIgnoreCase) ||
-                   (shopper.FriendReadAccess ?? false) ||
-                   (shopper.FriendWriteAccess ?? false) ||
-                   shopper.Friends.Any(o => string.Equals(o.Email, userEmailAddressId, StringComparison.InvariantCultureIgnoreCase));
+                   (((shopper.FriendReadAccess ?? false) ||
+                   (shopper.FriendWriteAccess ?? false)) &&
+                   shopper.Friends.Any(o => string.Equals(o.Email, userEmailAddressId, StringComparison.InvariantCultureIgnoreCase)));
         }
 
         /// <summary>
@@ -80,9 +80,23 @@ namespace OstoslistaAPI.Common
 
             return shopper?.Email == null ||
                    (shopper.PublicWriteAccess ?? false) ||
-                   shopper.Email == userEmailAddressId ||
-                   (shopper.FriendWriteAccess ?? false) ||
-                   shopper.Friends.Any(o => string.Equals(o.Email, userEmailAddressId, StringComparison.InvariantCultureIgnoreCase));
+                   string.Equals(shopper.Email, userEmailAddressId, StringComparison.InvariantCultureIgnoreCase) ||
+                   ((shopper.FriendWriteAccess ?? false) &&
+                   shopper.Friends.Any(o => string.Equals(o.Email, userEmailAddressId, StringComparison.InvariantCultureIgnoreCase)));
+        }
+
+        /// <summary>
+        /// Get users owner authorization for a shopper
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="shopper"></param>
+        /// <returns></returns>
+        public static bool GetShopperOwnerAuthorization(this ClaimsPrincipal user, ShopperEntity shopper)
+        {
+            var userEmailAddressId = user.GetUserEmailIdentifier();
+
+            return shopper?.Email != null &&
+                   string.Equals(shopper.Email, userEmailAddressId, StringComparison.InvariantCultureIgnoreCase);
         }
     }
 }
