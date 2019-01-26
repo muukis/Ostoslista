@@ -18,30 +18,44 @@ namespace OstoslistaData
             var shopper = modelBuilder.Entity<ShopperEntity>();
             shopper.InitBaseEntity();
             shopper.Property(o => o.Name).IsRequired().HasMaxLength(50);
+            shopper.Property(o => o.Email).IsRequired(false).HasMaxLength(100);
+            shopper.Property(o => o.AllowNewFriendRequests).IsRequired(false).ValueGeneratedOnAdd();
+            shopper.Property(o => o.PublicWriteAccess).IsRequired(false).ValueGeneratedOnAdd();
+            shopper.Property(o => o.PublicReadAccess).IsRequired(false).ValueGeneratedOnAdd();
+            shopper.Property(o => o.FriendWriteAccess).IsRequired(false).ValueGeneratedOnAdd();
+            shopper.Property(o => o.FriendReadAccess).IsRequired(false).ValueGeneratedOnAdd();
             shopper.HasMany(o => o.Items).WithOne(o => o.Shopper);
+            shopper.HasMany(o => o.Friends).WithOne(o => o.Shopper);
+            shopper.HasMany(o => o.FriendRequests).WithOne(o => o.Shopper);
+
+            var shopperFriend = modelBuilder.Entity<ShopperFriendEntity>();
+            shopperFriend.InitBaseShopperFriendEntity(o => o.Friends);
+
+            var shopperFriendRequest = modelBuilder.Entity<ShopperFriendRequestEntity>();
+            shopperFriendRequest.InitBaseShopperFriendEntity(o => o.FriendRequests);
 
             var item = modelBuilder.Entity<ShoppingListItemEntity>();
-            item.InitBaseEntity();
+            item.InitBaseShopperChildEntity(o => o.Items);
             item.Property(o => o.Pending).IsRequired(false).ValueGeneratedOnAdd();
             item.Property(o => o.Title).IsRequired().HasMaxLength(100);
-            item.Property(o => o.ShopperId).IsRequired();
-            item.HasOne(o => o.Shopper).WithMany(o => o.Items);
         }
 
         public virtual DbSet<ShopperEntity> Ostaja { get; set; }
+        public virtual DbSet<ShopperFriendEntity> Kaveri { get; set; }
+        public virtual DbSet<ShopperFriendRequestEntity> KaveriPyynto { get; set; }
         public virtual DbSet<ShoppingListItemEntity> Ostoslista { get; set; }
 
         public async Task<ShopperEntity> GetShopper(string shopperName)
         {
-            return await Ostaja.SingleAsync(o => string.Equals(o.Name, shopperName, StringComparison.InvariantCulture));
+            return await Ostaja.SingleOrDefaultAsync(o => string.Equals(o.Name, shopperName, StringComparison.InvariantCulture));
         }
 
-        public async Task<ShopperEntity> CreateShopper(string shopperName)
+        public async Task<ShopperEntity> CreateShopper(string shopperName, string emailIdentifier)
         {
             var shopper = new ShopperEntity
             {
                 Name = shopperName.Trim(),
-                Email = "?"
+                Email = emailIdentifier
             };
 
             await Ostaja.AddAsync(shopper);

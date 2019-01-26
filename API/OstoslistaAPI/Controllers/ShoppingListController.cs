@@ -3,9 +3,11 @@ using OstoslistaContracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using OstoslistaAPI.Common;
 using OstoslistaAPI.Hubs;
 using OstoslistaData;
 
@@ -39,16 +41,30 @@ namespace OstoslistaAPI.Controllers
         /// <returns><see cref="ShoppingListItemResult"/> object</returns>
         /// <response code="200">Array of shopping list items</response>
         /// <response code="400">Invalid request</response>
+        /// <response code="401">Unauthorized request</response>
         /// <response code="500">Internal server error</response>
         [HttpGet]
         [Route("{shopperName}")]
         [ProducesResponseType(typeof(ShoppingListItemResult[]), 200)]
         [ProducesResponseType(typeof(ErrorResult), 400)]
+        [ProducesResponseType(typeof(ErrorResult), 401)]
         [ProducesResponseType(typeof(ErrorResult), 500)]
         public async Task<IActionResult> GetAllShoppingListItems([FromRoute] string shopperName)
         {
             try
             {
+                var shopper = await _service.GetShopper(shopperName);
+
+                if (!User.GetShopperReadAuthorization(shopper))
+                {
+                    return Error(new ErrorResult
+                    {
+                        Code = HttpStatusCode.Unauthorized,
+                        Classification = ErrorClassification.AuthorizationError,
+                        Message = "Unauthorized request"
+                    });
+                }
+
                 var items = (await _service.FindItems(o => string.Equals(o.Shopper.Name, shopperName, StringComparison.InvariantCulture))).ToResults();
                 return Ok(items.OrderBy(o => o.Title));
             }
@@ -56,7 +72,7 @@ namespace OstoslistaAPI.Controllers
             {
                 return Error(new ErrorResult
                 {
-                    Code = 900,
+                    Code = HttpStatusCode.InternalServerError,
                     Classification = ErrorClassification.InternalError,
                     Message = "Failed getting shopping list items"
                 });
@@ -70,16 +86,30 @@ namespace OstoslistaAPI.Controllers
         /// <returns>Array of <see cref="ShoppingListItemResult"/> objects</returns>
         /// <response code="200">Array of pending shopping list items</response>
         /// <response code="400">Invalid request</response>
+        /// <response code="401">Unauthorized request</response>
         /// <response code="500">Internal server error</response>
         [HttpGet]
         [Route("{shopperName}/pending")]
         [ProducesResponseType(typeof(ShoppingListItemResult[]), 200)]
         [ProducesResponseType(typeof(ErrorResult), 400)]
+        [ProducesResponseType(typeof(ErrorResult), 401)]
         [ProducesResponseType(typeof(ErrorResult), 500)]
         public async Task<IActionResult> GetPendingShoppingListItems([FromRoute] string shopperName)
         {
             try
             {
+                var shopper = await _service.GetShopper(shopperName);
+
+                if (!User.GetShopperReadAuthorization(shopper))
+                {
+                    return Error(new ErrorResult
+                    {
+                        Code = HttpStatusCode.Unauthorized,
+                        Classification = ErrorClassification.AuthorizationError,
+                        Message = "Unauthorized request"
+                    });
+                }
+
                 var items = (await _service.FindItems(o => string.Equals(o.Shopper.Name, shopperName, StringComparison.InvariantCulture) && o.Pending == true)).ToResults();
                 return Ok(items);
             }
@@ -87,7 +117,7 @@ namespace OstoslistaAPI.Controllers
             {
                 return Error(new ErrorResult
                 {
-                    Code = 900,
+                    Code = HttpStatusCode.InternalServerError,
                     Classification = ErrorClassification.InternalError,
                     Message = "Failed getting pending shopping list items"
                 });
@@ -101,11 +131,13 @@ namespace OstoslistaAPI.Controllers
         /// <returns><see cref="ShoppingListItemResult"/> object</returns>
         /// <response code="200">Shopping list item with the given id</response>
         /// <response code="400">Invalid request</response>
+        /// <response code="401">Unauthorized request</response>
         /// <response code="500">Internal server error</response>
         [HttpGet]
         [Route("{shoppingListItemId}")]
         [ProducesResponseType(typeof(ShoppingListItemResult), 200)]
         [ProducesResponseType(typeof(ErrorResult), 400)]
+        [ProducesResponseType(typeof(ErrorResult), 401)]
         [ProducesResponseType(typeof(ErrorResult), 500)]
         public async Task<IActionResult> GetShoppingListItem([FromRoute] Guid shoppingListItemId)
         {
@@ -117,19 +149,31 @@ namespace OstoslistaAPI.Controllers
                 {
                     return Error(new ErrorResult
                     {
-                        Code = 600,
+                        Code = HttpStatusCode.BadRequest,
                         Classification = ErrorClassification.EntityNotFound,
                         Message = "Shopping list item not found"
                     });
                 }
 
-                return Ok(searchResult.First().ToResult());
+                var item = searchResult.First();
+
+                if (!User.GetShopperReadAuthorization(item.Shopper))
+                {
+                    return Error(new ErrorResult
+                    {
+                        Code = HttpStatusCode.Unauthorized,
+                        Classification = ErrorClassification.AuthorizationError,
+                        Message = "Unauthorized request"
+                    });
+                }
+
+                return Ok(item.ToResult());
             }
             catch (Exception)
             {
                 return Error(new ErrorResult
                 {
-                    Code = 900,
+                    Code = HttpStatusCode.InternalServerError,
                     Classification = ErrorClassification.InternalError,
                     Message = "Failed getting shopping list item"
                 });
@@ -144,11 +188,13 @@ namespace OstoslistaAPI.Controllers
         /// <returns>Newly created <see cref="ShoppingListItemResult"/> object</returns>
         /// <response code="200">Details about the created shopping list item</response>
         /// <response code="400">Invalid request</response>
+        /// <response code="401">Unauthorized request</response>
         /// <response code="500">Internal server error</response>
         [HttpPost]
         [Route("{shopperName}")]
         [ProducesResponseType(typeof(ShoppingListItemResult), 200)]
         [ProducesResponseType(typeof(ErrorResult), 400)]
+        [ProducesResponseType(typeof(ErrorResult), 401)]
         [ProducesResponseType(typeof(ErrorResult), 500)]
         public async Task<IActionResult> PostShoppingListItem([FromRoute] string shopperName, [FromBody] ShoppingListTitleDto title)
         {
@@ -163,11 +209,13 @@ namespace OstoslistaAPI.Controllers
         /// <returns>Newly created <see cref="ShoppingListItemResult"/> object</returns>
         /// <response code="200">Details about the created shopping list item</response>
         /// <response code="400">Invalid request</response>
+        /// <response code="401">Unauthorized request</response>
         /// <response code="500">Internal server error</response>
         [HttpPut]
         [Route("{shopperName}/add/{title}")]
         [ProducesResponseType(typeof(ShoppingListItemResult), 200)]
         [ProducesResponseType(typeof(ErrorResult), 400)]
+        [ProducesResponseType(typeof(ErrorResult), 401)]
         [ProducesResponseType(typeof(ErrorResult), 500)]
         public async Task<IActionResult> SetShoppingListItem([FromRoute] string shopperName, [FromRoute] string title)
         {
@@ -188,9 +236,21 @@ namespace OstoslistaAPI.Controllers
                 {
                     return Error(new ErrorResult
                     {
-                        Code = 400,
+                        Code = HttpStatusCode.BadRequest,
                         Classification = ErrorClassification.InvalidArgument,
                         Message = "Invalid title value"
+                    });
+                }
+
+                var shopper = await _service.GetShopper(shopperName);
+
+                if (!User.GetShopperWriteAuthorization(shopper))
+                {
+                    return Error(new ErrorResult
+                    {
+                        Code = HttpStatusCode.Unauthorized,
+                        Classification = ErrorClassification.AuthorizationError,
+                        Message = "Unauthorized request"
                     });
                 }
 
@@ -207,7 +267,7 @@ namespace OstoslistaAPI.Controllers
             {
                 return Error(new ErrorResult
                 {
-                    Code = 900,
+                    Code = HttpStatusCode.InternalServerError,
                     Classification = ErrorClassification.InternalError,
                     Message = "Failed creating new shopping list item"
                 });
@@ -222,16 +282,30 @@ namespace OstoslistaAPI.Controllers
         /// <returns><see cref="ShoppingListItemResult"/> object</returns>
         /// <response code="200">Details about the updated shopping list item</response>
         /// <response code="400">Invalid request</response>
+        /// <response code="401">Unauthorized request</response>
         /// <response code="500">Internal server error</response>
         [HttpPut]
         [Route("{shoppingListItemId}/{pending}")]
         [ProducesResponseType(typeof(ShoppingListItemResult), 200)]
         [ProducesResponseType(typeof(ErrorResult), 400)]
+        [ProducesResponseType(typeof(ErrorResult), 401)]
         [ProducesResponseType(typeof(ErrorResult), 500)]
         public async Task<IActionResult> UpdateShoppingListItemPendingValue([FromRoute] Guid shoppingListItemId, [FromRoute] bool pending)
         {
             try
             {
+                var item = (await _service.FindItems(o => o.Id == shoppingListItemId)).Single();
+
+                if (!User.GetShopperWriteAuthorization(item.Shopper))
+                {
+                    return Error(new ErrorResult
+                    {
+                        Code = HttpStatusCode.Unauthorized,
+                        Classification = ErrorClassification.AuthorizationError,
+                        Message = "Unauthorized request"
+                    });
+                }
+
                 var retval = (await _service.UpdateItemPendingStatus(shoppingListItemId, pending)).ToResult();
 
                 if (retval != null)
@@ -245,7 +319,7 @@ namespace OstoslistaAPI.Controllers
             {
                 return Error(new ErrorResult
                 {
-                    Code = 900,
+                    Code = HttpStatusCode.InternalServerError,
                     Classification = ErrorClassification.InternalError,
                     Message = "Failed updating shopping list item"
                 });
@@ -259,16 +333,30 @@ namespace OstoslistaAPI.Controllers
         /// <returns>Count of deleted shopping items</returns>
         /// <response code="200">Count of deleted shopping items</response>
         /// <response code="400">Invalid request</response>
+        /// <response code="401">Unauthorized request</response>
         /// <response code="500">Internal server error</response>
         [HttpDelete]
         [Route("{shoppingListItemId}")]
         [ProducesResponseType(typeof(int), 200)]
         [ProducesResponseType(typeof(ErrorResult), 400)]
+        [ProducesResponseType(typeof(ErrorResult), 401)]
         [ProducesResponseType(typeof(ErrorResult), 500)]
         public async Task<IActionResult> DeleteShoppingListItem([FromRoute] Guid shoppingListItemId)
         {
             try
             {
+                var item = (await _service.FindItems(o => o.Id == shoppingListItemId)).Single();
+
+                if (!User.GetShopperWriteAuthorization(item.Shopper))
+                {
+                    return Error(new ErrorResult
+                    {
+                        Code = HttpStatusCode.Unauthorized,
+                        Classification = ErrorClassification.AuthorizationError,
+                        Message = "Unauthorized request"
+                    });
+                }
+
                 var items = (await _service.DeleteItems(o => o.Id == shoppingListItemId)).ToList();
                 await SendDeleteMessageToHub(items);
                 return Ok(items.Count);
@@ -277,7 +365,7 @@ namespace OstoslistaAPI.Controllers
             {
                 return Error(new ErrorResult
                 {
-                    Code = 900,
+                    Code = HttpStatusCode.InternalServerError,
                     Classification = ErrorClassification.InternalError,
                     Message = "Failed deleting shopping list item"
                 });
@@ -307,16 +395,30 @@ namespace OstoslistaAPI.Controllers
         /// <returns>Count of deleted unpending shopping items</returns>
         /// <response code="200">Count of deleted unpending shopping items</response>
         /// <response code="400">Invalid request</response>
+        /// <response code="401">Unauthorized request</response>
         /// <response code="500">Internal server error</response>
         [HttpDelete]
         [Route("{shopperName}/unpending")]
         [ProducesResponseType(typeof(int), 200)]
         [ProducesResponseType(typeof(ErrorResult), 400)]
+        [ProducesResponseType(typeof(ErrorResult), 401)]
         [ProducesResponseType(typeof(ErrorResult), 500)]
         public async Task<IActionResult> DeleteAllUnpendingShoppingListItems([FromRoute] string shopperName)
         {
             try
             {
+                var shopper = await _service.GetShopper(shopperName);
+
+                if (!User.GetShopperWriteAuthorization(shopper))
+                {
+                    return Error(new ErrorResult
+                    {
+                        Code = HttpStatusCode.Unauthorized,
+                        Classification = ErrorClassification.AuthorizationError,
+                        Message = "Unauthorized request"
+                    });
+                }
+
                 var items = (await _service.DeleteItems(o => string.Equals(o.Shopper.Name, shopperName, StringComparison.InvariantCulture) && o.Pending == false)).ToList();
                 await SendDeleteMessageToHub(items);
                 return Ok(items.Count);
@@ -325,7 +427,7 @@ namespace OstoslistaAPI.Controllers
             {
                 return Error(new ErrorResult
                 {
-                    Code = 900,
+                    Code = HttpStatusCode.InternalServerError,
                     Classification = ErrorClassification.InternalError,
                     Message = "Failed deleting shopping list item"
                 });
@@ -339,24 +441,26 @@ namespace OstoslistaAPI.Controllers
         /// <returns>Count of deleted unpending shopping items</returns>
         /// <response code="200">Shopper name</response>
         /// <response code="400">Invalid request</response>
+        /// <response code="401">Unauthorized request</response>
         /// <response code="500">Internal server error</response>
         [HttpPost]
         [Route("addShopper")]
         [ProducesResponseType(typeof(string), 200)]
         [ProducesResponseType(typeof(ErrorResult), 400)]
+        [ProducesResponseType(typeof(ErrorResult), 401)]
         [ProducesResponseType(typeof(ErrorResult), 500)]
         public async Task<IActionResult> CreateNewShopper([FromBody] ShopperNameDto shopperName)
         {
             try
             {
-                var shopper = await _service.CreateShopper(shopperName.Name);
+                var shopper = await _service.CreateShopper(shopperName.Name, User.GetUserEmailIdentifier());
                 return Ok(shopper.Name);
             }
             catch (Exception)
             {
                 return Error(new ErrorResult
                 {
-                    Code = 900,
+                    Code = HttpStatusCode.InternalServerError,
                     Classification = ErrorClassification.InternalError,
                     Message = "Failed deleting shopping list item"
                 });

@@ -29,7 +29,7 @@
             dataType: 'json',
             success: checkConnectionState,
             error: function (e) {
-                console.log("ERROR: " + e);
+                console.log("ERROR: " + e.toString());
             }
         });
     }
@@ -70,7 +70,7 @@
                 elem.focus();
             },
             error: function(e) {
-                console.log("ERROR: " + e);
+                console.log("ERROR: " + e.toString());
             }
         });
     }
@@ -94,7 +94,8 @@
             dataType: 'json',
             success: checkConnectionState,
             error: function(e) {
-                console.log("ERROR: " + e);
+                console.log("ERROR: " + e.toString());
+                setItemRowPending(row, !setPending);
                 row.click(togglePending);
             }
         });
@@ -223,7 +224,8 @@
             dataType: 'json',
             success: loadShoppingListDataSuccess,
             error: function(e) {
-                console.log("ERROR: " + e);
+                console.log("ERROR: " + e.toString());
+                loadShoppingListDataSuccess();
             }
         });
     }

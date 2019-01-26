@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using OstoslistaContracts;
 
 namespace OstoslistaAPI.Controllers
 {
@@ -31,11 +32,11 @@ namespace OstoslistaAPI.Controllers
         /// </summary>
         /// <param name="value">The content value to format in the entity body.</param>
         /// <returns>The created Microsoft.AspNetCore.Mvc.ObjectResult for the response.</returns>
-        protected ObjectResult Error(object value)
+        protected ObjectResult Error<T>(T value) where T : ErrorResult
         {
             return new ObjectResult(value)
             {
-                StatusCode = (int) System.Net.HttpStatusCode.InternalServerError
+                StatusCode = (int) value.Code
             };
         }
     }

@@ -1,12 +1,8 @@
-﻿using System;
-
-namespace OstoslistaData
+﻿namespace OstoslistaData
 {
-    public class ShoppingListItemEntity : BaseEntity
+    public class ShoppingListItemEntity : BaseShopperChildEntity
     {
         public string Title { get; set; }
         public bool? Pending { get; set; }
-        public virtual ShopperEntity Shopper { get; set; }
-        public Guid ShopperId { get; set; }
     }
 }

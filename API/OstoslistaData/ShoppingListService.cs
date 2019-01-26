@@ -19,9 +19,9 @@ namespace OstoslistaData
             return await _dataService.GetShopper(shopperName);
         }
 
-        public async Task<ShopperEntity> CreateShopper(string shopperName)
+        public async Task<ShopperEntity> CreateShopper(string shopperName, string emailIdentifier)
         {
-            return await _dataService.CreateShopper(shopperName);
+            return await _dataService.CreateShopper(shopperName, emailIdentifier);
         }
 
         public async Task<IEnumerable<ShoppingListItemEntity>> FindItems(Expression<Func<ShoppingListItemEntity, bool>> predicate)

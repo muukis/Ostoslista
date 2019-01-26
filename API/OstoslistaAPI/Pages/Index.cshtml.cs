@@ -1,8 +1,10 @@
-﻿using System.Web;
+﻿using System.Threading.Tasks;
+using System.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OstoslistaAPI.Models;
+using OstoslistaData;
 
 namespace OstoslistaAPI.Pages
 {
@@ -12,12 +14,27 @@ namespace OstoslistaAPI.Pages
     [AllowAnonymous]
     public class IndexModel : PageBaseModel
     {
-        private const string shopperNameKey = "shopperName";
+        private const string _shopperNameKey = "shopperName";
+        private readonly IShoppingListService _shoppingListService;
 
         /// <summary>
         /// 
         /// </summary>
-        public string ShopperName => HttpContext.Session.GetString(shopperNameKey);
+        /// <param name="shoppingListService"></param>
+        public IndexModel(IShoppingListService shoppingListService)
+        {
+            _shoppingListService = shoppingListService;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public ShopperEntity Shopper { get; private set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public string ShopperName => HttpContext.Session.GetString(_shopperNameKey);
 
         /// <summary>
         /// 
@@ -38,11 +55,16 @@ namespace OstoslistaAPI.Pages
         /// 
         /// </summary>
         /// <param name="shopperName"></param>
-        public IActionResult OnGet([FromQuery(Name = "lista")] string shopperName)
+        public async Task<IActionResult> OnGet([FromQuery(Name = "lista")] string shopperName)
         {
             if (shopperName != null)
             {
-                HttpContext.Session.SetString(shopperNameKey, shopperName);
+                HttpContext.Session.SetString(_shopperNameKey, shopperName);
+            }
+
+            if (ShopperName != null)
+            {
+                Shopper = await _shoppingListService.GetShopper(ShopperName);
             }
 
             return Page();
