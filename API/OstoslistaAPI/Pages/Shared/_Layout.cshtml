@@ -123,8 +123,29 @@
     img.profile {
         border-radius: 50%;
     }
+
+    #searchInput {
+        background-image: url('/css/searchicon.png');
+        background-position: 2px 4px;
+        background-repeat: no-repeat;
+        width: 130px;
+        font-size: 12px;
+        padding: 5px 5px 5px 23px;
+        border: 1px solid #000;
+        margin-top: 5px;
+        border-radius: 8px;
+    }
 </style>
 
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#searchInput").on('keypress', function(e) {
+            if (e.which === 13) {
+                window.location = "/?lista=" + encodeURIComponent($(this).val());
+            }
+        });
+    });
+</script>
 </head>
 <body>
     <header>
@@ -162,6 +183,7 @@
                         </li>*@
                     </ul>
                     <ul class="navbar-nav">
+                        <li><input type="text" id="searchInput" placeholder="Avaa ostoslista..."></li>
                         @{
                             if (User.Identity.IsAuthenticated)
                             {
