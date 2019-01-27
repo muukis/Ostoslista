@@ -28,6 +28,7 @@ namespace OstoslistaAPI.Controllers
         /// 
         /// </summary>
         /// <param name="service"></param>
+        /// <param name="hubContext"></param>
         public ShoppingListController(IShoppingListService service, IHubContext<ShoppingListHub, IMessages> hubContext)
         {
             _service = service;

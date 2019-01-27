@@ -1,18 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using OstoslistaContracts;
+using OstoslistaData;
 
 namespace OstoslistaAPI.Hubs
 {
     /// <summary>
     /// 
     /// </summary>
+    [AllowAnonymous]
     public class ShoppingListHub : Hub<IMessages>
     {
+        private readonly IShoppingListService _service;
         private readonly Dictionary<string, string> _groupConnections = new Dictionary<string, string>();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public ShoppingListHub(IShoppingListService service)
+        {
+            _service = service;
+        }
 
         /// <summary>
         /// 

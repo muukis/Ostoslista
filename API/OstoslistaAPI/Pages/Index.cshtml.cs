@@ -3,6 +3,7 @@ using System.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using OstoslistaAPI.Common;
 using OstoslistaAPI.Models;
 using OstoslistaData;
 
@@ -69,5 +70,20 @@ namespace OstoslistaAPI.Pages
 
             return Page();
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool UserIsReadAuthenticated => Shopper != null && User.GetShopperReadAuthorization(Shopper);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool UserIsWriteAuthenticated => Shopper != null && User.GetShopperWriteAuthorization(Shopper);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool UserIsOwnerAuthenticated => Shopper != null && User.GetShopperOwnerAuthorization(Shopper);
     }
 }
