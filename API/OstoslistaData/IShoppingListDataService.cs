@@ -7,5 +7,7 @@ namespace OstoslistaData
     {
         DbSet<ShoppingListItemEntity> Ostoslista { get; set; }
         DbSet<ShopperEntity> Ostaja { get; set; }
+        DbSet<ShopperFriendEntity> Kaveri { get; set; }
+        DbSet<ShopperFriendRequestEntity> KaveriPyynto { get; set; }
     }
 }

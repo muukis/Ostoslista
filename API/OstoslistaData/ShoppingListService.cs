@@ -43,5 +43,10 @@ namespace OstoslistaData
         {
             return await _dataService.DeleteItems(predicate);
         }
+
+        public async Task<ShopperEntity> SaveShopperSettings(ShopperSettings shopperSettings)
+        {
+            return await _dataService.SaveShopperSettings(shopperSettings);
+        }
     }
 }

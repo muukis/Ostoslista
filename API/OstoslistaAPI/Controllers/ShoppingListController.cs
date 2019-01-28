@@ -439,7 +439,7 @@ namespace OstoslistaAPI.Controllers
         /// Create new shopper
         /// </summary>
         /// <param name="shopperName">Shopper name</param>
-        /// <returns>Count of deleted unpending shopping items</returns>
+        /// <returns>Shopper name</returns>
         /// <response code="200">Shopper name</response>
         /// <response code="400">Invalid request</response>
         /// <response code="401">Unauthorized request</response>
@@ -463,7 +463,96 @@ namespace OstoslistaAPI.Controllers
                 {
                     Code = HttpStatusCode.InternalServerError,
                     Classification = ErrorClassification.InternalError,
-                    Message = "Failed deleting shopping list item"
+                    Message = "Failed creating shopper"
+                });
+            }
+        }
+
+        /// <summary>
+        /// Create new shopper
+        /// </summary>
+        /// <param name="shopperName">Shopper name</param>
+        /// <returns>Shopper settings</returns>
+        /// <response code="200">Shopper settings</response>
+        /// <response code="400">Invalid request</response>
+        /// <response code="401">Unauthorized request</response>
+        /// <response code="500">Internal server error</response>
+        [HttpGet]
+        [Route("{shopperName}/settings")]
+        [ProducesResponseType(typeof(GetShopperSettingsResult), 200)]
+        [ProducesResponseType(typeof(ErrorResult), 400)]
+        [ProducesResponseType(typeof(ErrorResult), 401)]
+        [ProducesResponseType(typeof(ErrorResult), 500)]
+        public async Task<IActionResult> GetShopperSettings([FromRoute] string shopperName)
+        {
+            try
+            {
+                var shopper = await _service.GetShopper(shopperName);
+
+                if (!User.GetShopperOwnerAuthorization(shopper))
+                {
+                    return Error(new ErrorResult
+                    {
+                        Code = HttpStatusCode.Unauthorized,
+                        Classification = ErrorClassification.AuthorizationError,
+                        Message = "Unauthorized request"
+                    });
+                }
+
+                return Ok(shopper.ToSettingsResult());
+            }
+            catch (Exception)
+            {
+                return Error(new ErrorResult
+                {
+                    Code = HttpStatusCode.InternalServerError,
+                    Classification = ErrorClassification.InternalError,
+                    Message = "Failed getting shopper settings"
+                });
+            }
+        }
+
+        /// <summary>
+        /// Create new shopper
+        /// </summary>
+        /// <param name="shopperSettings">Shopper name</param>
+        /// <returns>Shopper settings</returns>
+        /// <response code="200">Shopper settings</response>
+        /// <response code="400">Invalid request</response>
+        /// <response code="401">Unauthorized request</response>
+        /// <response code="500">Internal server error</response>
+        [HttpPost]
+        [Route("saveShopperSettings")]
+        [ProducesResponseType(typeof(GetShopperSettingsResult), 200)]
+        [ProducesResponseType(typeof(ErrorResult), 400)]
+        [ProducesResponseType(typeof(ErrorResult), 401)]
+        [ProducesResponseType(typeof(ErrorResult), 500)]
+        public async Task<IActionResult> SaveShopperSettings([FromBody] SetShopperSettingsDto shopperSettings)
+        {
+            try
+            {
+                var shopper = await _service.GetShopper(shopperSettings.Name);
+
+                if (!User.GetShopperOwnerAuthorization(shopper))
+                {
+                    return Error(new ErrorResult
+                    {
+                        Code = HttpStatusCode.Unauthorized,
+                        Classification = ErrorClassification.AuthorizationError,
+                        Message = "Unauthorized request"
+                    });
+                }
+
+                shopper = await _service.SaveShopperSettings(shopperSettings.ToDataObject(shopper.Id));
+                return Ok(shopper.ToSettingsResult());
+            }
+            catch (Exception)
+            {
+                return Error(new ErrorResult
+                {
+                    Code = HttpStatusCode.InternalServerError,
+                    Classification = ErrorClassification.InternalError,
+                    Message = "Failed setting shopper settings"
                 });
             }
         }

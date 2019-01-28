@@ -29,7 +29,7 @@ namespace OstoslistaAPI.Common
         /// <returns></returns>
         public static string GetUserEmail(this ClaimsPrincipal user)
         {
-            return user.FindFirstValue(ClaimTypes.Email);
+            return !user.Identity.IsAuthenticated ? null : user.FindFirstValue(ClaimTypes.Email);
         }
 
         /// <summary>

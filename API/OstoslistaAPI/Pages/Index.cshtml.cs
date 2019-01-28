@@ -1,5 +1,6 @@
-﻿using System.Threading.Tasks;
-using System.Web;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,42 +16,14 @@ namespace OstoslistaAPI.Pages
     [AllowAnonymous]
     public class IndexModel : PageBaseModel
     {
-        private const string _shopperNameKey = "shopperName";
-        private readonly IShoppingListService _shoppingListService;
-
         /// <summary>
         /// 
         /// </summary>
         /// <param name="shoppingListService"></param>
         public IndexModel(IShoppingListService shoppingListService)
+            : base(shoppingListService)
         {
-            _shoppingListService = shoppingListService;
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public ShopperEntity Shopper { get; private set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public string ShopperName => HttpContext.Session.GetString(_shopperNameKey);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public string UrlEncodedShopperName => HttpUtility.UrlEncode(ShopperName);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public string HtmlEncodedShopperName => HttpUtility.HtmlEncode(ShopperName);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public string EscapedShopperName => (ShopperName ?? string.Empty).Replace(@"\", @"\\").Replace("\"", "\\\"");
 
         /// <summary>
         /// 
@@ -60,7 +33,7 @@ namespace OstoslistaAPI.Pages
         {
             if (shopperName != null)
             {
-                HttpContext.Session.SetString(_shopperNameKey, shopperName);
+                ShopperName = shopperName;
             }
 
             if (ShopperName != null)
@@ -74,16 +47,57 @@ namespace OstoslistaAPI.Pages
         /// <summary>
         /// 
         /// </summary>
-        public bool UserIsReadAuthenticated => Shopper != null && User.GetShopperReadAuthorization(Shopper);
+        public bool UserIsShopperFriend
+        {
+            get
+            {
+                if (!TryGetUserEmailIdentifierWithShopperCheck(out string emailIdentifier))
+                {
+                    return false;
+                }
+
+                return Shopper.Friends?.Any(o => string.Equals(o.Email, emailIdentifier, StringComparison.InvariantCultureIgnoreCase)) ?? false;
+            }
+        }
 
         /// <summary>
         /// 
         /// </summary>
-        public bool UserIsWriteAuthenticated => Shopper != null && User.GetShopperWriteAuthorization(Shopper);
+        public bool UserIsShopperFriendRequested
+        {
+            get
+            {
+                if (UserIsShopperFriend)
+                {
+                    return true;
+                }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public bool UserIsOwnerAuthenticated => Shopper != null && User.GetShopperOwnerAuthorization(Shopper);
+                if (!TryGetUserEmailIdentifierWithShopperCheck(out string emailIdentifier))
+                {
+                    return false;
+                }
+
+                return Shopper.FriendRequests?.Any(o => string.Equals(o.Email, emailIdentifier, StringComparison.InvariantCultureIgnoreCase)) ?? false;
+            }
+        }
+
+        private bool TryGetUserEmailIdentifierWithShopperCheck(out string emailIdentifier)
+        {
+            emailIdentifier = null;
+
+            if (Shopper == null)
+            {
+                return false;
+            }
+
+            emailIdentifier = User.GetUserEmailIdentifier();
+
+            if (emailIdentifier == null)
+            {
+                return false;
+            }
+
+            return true;
+        }
     }
 }

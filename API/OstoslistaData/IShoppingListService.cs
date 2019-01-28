@@ -13,5 +13,6 @@ namespace OstoslistaData
         Task<ShoppingListItemEntity> CreateItem(string shopperName, string title);
         Task<ShoppingListItemEntity> UpdateItemPendingStatus(Guid id, bool isPending);
         Task<IEnumerable<ShoppingListItemEntity>> DeleteItems(Expression<Func<ShoppingListItemEntity, bool>> predicate);
+        Task<ShopperEntity> SaveShopperSettings(ShopperSettings shopperSettings);
     }
 }

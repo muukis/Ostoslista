@@ -1,0 +1,141 @@
+﻿@page
+@model OstoslistaAPI.Pages.SettingsModel
+@{
+    ViewData["Title"] = "Ostoslistan asetukset";
+}
+
+<div class="text-center">
+    <h1><i class="fas fa-tasks"></i> Asetukset@(string.IsNullOrWhiteSpace(Model.ShopperName) ? "" : $" ({Model.HtmlEncodedShopperName})")</h1>
+    <div id="asetuksetOsa" style="display: none;">
+        <div class="shoppingList" id="asetukset">Ladataan...</div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function loadSettingsDataSuccess(data) {
+        var asetukset = $("#asetukset");
+        asetukset.html("");
+
+        if (!data) {
+            return;
+        }
+
+        asetukset.hide();
+
+        asetukset.append(createSettingsRow("PublicReadAccess", data.PublicReadAccess, "Kuka tahansa voi lukea ostoslistaa"));
+        asetukset.append(createSettingsRow("PublicWriteAccess", data.PublicWriteAccess, "Kuka tahansa voi lukea ja kirjoittaa ostoslistaan"));
+        asetukset.append($('<div class="spaceBelow"></div>'));
+        asetukset.append(createSettingsRow("AllowNewFriendRequests", data.AllowNewFriendRequests, "Salli uudet kaveripyynnöt"));
+        asetukset.append(createSettingsRow("FriendReadAccess", data.FriendReadAccess, "Kaverit voivat lukea ostoslistaa"));
+        asetukset.append(createSettingsRow("FriendWriteAccess", data.FriendWriteAccess, "Kaverit voivat lukea ja kirjoittaa ostoslistaan"));
+
+        asetukset.fadeIn(1000);
+    }
+
+    function toggleSetting() {
+        var row = $(this);
+        var elem = row.find('i[name="asetusTikki"]');
+
+        if (!elem) {
+            return;
+        }
+
+        row.off('click');
+        var setChecked = elem.hasClass("fa-circle");
+        setItemRowAjaxRunning($(this));
+
+        var data = {};
+        data["Name"] = "@Model.EscapedShopperName";
+        data[row[0].id] = setChecked;
+
+        $.ajax({
+            type: 'POST',
+            url: "/api/ShoppingList/saveShopperSettings",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify(data),
+            success: function (data) {
+                setItemRowChecked(row, data[row[0].id]);
+                row.click(toggleSetting);
+            },
+            error: function(e) {
+                console.log("ERROR: " + e.toString());
+                setItemRowChecked(row, !setChecked);
+                row.click(toggleSetting);
+            }
+        });
+    }
+
+    function setItemRowChecked(row, isChecked) {
+        //console.log("setItemRowChecked " + isChecked);
+        var checkElem = row.find('i[name="asetusTikki"]');
+        checkElem.removeClass("fas");
+        checkElem.removeClass("fa-spinner");
+        checkElem.removeClass("fa-spin");
+        checkElem.removeClass("far");
+        checkElem.removeClass("fa-circle");
+        checkElem.removeClass("fa-check-circle");
+        checkElem.addClass("far");
+        if (isChecked) {
+            checkElem.addClass("fa-check-circle");
+        } else {
+            checkElem.addClass("fa-circle");
+        }
+    }
+
+    function setItemRowAjaxRunning(row) {
+        var checkElem = row.find('i[name="asetusTikki"]');
+        checkElem.removeClass("far");
+        checkElem.removeClass("fa-circle");
+        checkElem.removeClass("fa-check-circle");
+        checkElem.addClass("fas");
+        checkElem.addClass("fa-spinner");
+        checkElem.addClass("fa-spin");
+    }
+
+    function createSettingsRow(settingId, isChecked, title) {
+        var row = $('<div id="' + settingId + '" class="shoppingList-item-row" style="cursor: pointer";></div>');
+        row.prop("title", title);
+        row.append(createCheckBoxElement(isChecked));
+        var cell2 = $('<div class="shoppingList-item-cell"></div>');
+        cell2.append($('<span style="margin-left: 10px"></span>').text(title));
+        row.append(cell2);
+        row.click(toggleSetting);
+        return row;
+    }
+
+    function createCheckBoxElement(isChecked) {
+        var iconElem = $('<div class="shoppingList-item-cell"></div>');
+        if (isChecked) {
+            iconElem.append($('<i name="asetusTikki" class="far fa-check-circle"></i>'));
+        } else {
+            iconElem.append($('<i name="asetusTikki" class="far fa-circle"></i>'));
+        }
+        return iconElem;
+    }
+
+    function loadSettingsData() {
+        var elem = $("#asetuksetOsa");
+        elem.show();
+
+        $.blockUI({ message: $('#waitIndContainer') });
+        $.ajax({
+            type: 'GET',
+            url: "/api/ShoppingList/@Model.UrlEncodedShopperName/settings",
+            dataType: 'json',
+            success: loadSettingsDataSuccess,
+            error: function(e) {
+                console.log("ERROR: " + e.toString());
+                loadSettingsDataSuccess();
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        $.blockUI.defaults.css = {};
+        $(document).ajaxStop($.unblockUI);
+        loadSettingsData();
+    });
+</script>

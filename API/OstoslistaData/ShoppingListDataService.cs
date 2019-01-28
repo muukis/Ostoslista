@@ -116,5 +116,24 @@ namespace OstoslistaData
             await SaveChangesAsync();
             return itemsToDelete;
         }
+
+        public async Task<ShopperEntity> SaveShopperSettings(ShopperSettings shopperSettings)
+        {
+            var shopper = await Ostaja.FindAsync(shopperSettings.Id);
+
+            if (shopper == null)
+            {
+                throw new ArgumentException("Invalid shopper identifier", nameof(shopperSettings));
+            }
+
+            shopper.AllowNewFriendRequests = shopperSettings.AllowNewFriendRequests ?? shopper.AllowNewFriendRequests;
+            shopper.PublicReadAccess = shopperSettings.PublicReadAccess ?? shopper.PublicReadAccess;
+            shopper.PublicWriteAccess = shopperSettings.PublicWriteAccess ?? shopper.PublicWriteAccess;
+            shopper.FriendReadAccess = shopperSettings.FriendReadAccess ?? shopper.FriendReadAccess;
+            shopper.FriendWriteAccess = shopperSettings.FriendWriteAccess ?? shopper.FriendWriteAccess;
+            await SaveChangesAsync();
+
+            return shopper;
+        }
     }
 }

@@ -7,8 +7,19 @@
 
 <div class="text-center">
     <h1><i class="fas fa-shopping-basket"></i> Ostoslista@(string.IsNullOrWhiteSpace(Model.ShopperName) ? "" : $" ({Model.HtmlEncodedShopperName})")</h1>
+    @{
+    }
     <div id="ostolistaTuotteet" style="display: none;">
         @{
+            if (Model.UserIsOwnerAuthenticated)
+            {
+        <text>
+        <div class="spaceBelow">
+            <a href="/Settings" target="_self" title="Muokkaa ostoslistasi asetuksia..." class="text-dark"><i class="fas fa-tasks"></i> Ostoslistasi asetukset</a>
+        </div>
+        </text>
+            }
+
             if (Model.UserIsWriteAuthenticated)
             {
         <text>
@@ -309,14 +320,71 @@
     $(document).ready(function () {
         $.blockUI.defaults.css = {};
         $(document).ajaxStop($.unblockUI);
-        loadShoppingListData();
+        var elem = $("#ostolistaTuotteet");
+        var row;
         @{
-            if (Model.UserIsReadAuthenticated)
+            if (!Model.UserIsReadAuthenticated)
             {
         <text>
+        elem.html("");
+        </text>
+                if (Model.UserIsShopperFriend)
+                {
+        <text>
+        elem.append($('<h2 class="spaceAbove">Tässä ostoslistassa ei ole vielä lukuoikeuksia asetettuna!</h2>'));
+        </text>
+                }
+                else if (Model.Shopper?.AllowNewFriendRequests ?? false)
+                {
+                    if (Model.UserIsShopperFriendRequested)
+                    {
+        <text>
+        elem.append($('<h2 class="spaceAbove">Ostoslistan kaveripyyntöäsi ei ole vielä hyväksytty!</h2>'));
+        row = $("<div></div>");
+        row.append($('<input type="button" value="Poista kaveripyyntö" onclick="alert(\'kukkuu1\');" class="buttons" />'));
+        elem.append(row);
+        </text>
+                    }
+                    else
+                    {
+        <text>
+        elem.append($('<h2 class="spaceAbove">Tämä ostoslista hyväksyy kavereita!</h2>'));
+        </text>
+                        if (User.Identity.IsAuthenticated)
+                        {
+        <text>
+        row = $("<div></div>");
+        row.append($('<input type="button" value="Lähetä kaveripyyntö" onclick="alert(\'kukkuu2\');" class="buttons" />'));
+        elem.append(row);
+        </text>
+                        }
+                        else
+                        {
+        <text>
+        row = $("<div></div>");
+        row.append($('<a href="/Login" target="_self" title="Kirjaudu sisään Google tunnuksillasi"><i class="fas fa-sign-in-alt"></i> Kirjaudu sisään</a>'));
+        elem.append(row);
+        </text>
+                        }
+                    }
+                }
+        <text>
+        elem.append($('<h3 class="spaceAbove">Käytä ostoskassi tunnustasi!</h3>'));
+        row = $("<div></div>");
+        row.append($('<input type="text" id="ostoskassinTunnus" size="10" placeholder="Syötä ostoslistan tunnus..." onkeypress="return keyPress(event, openShoppingList);" class="newItem"/>'));
+        row.append("&nbsp;");
+        row.append($('<input type="button" value="Avaa" onclick="openShoppingList();" class="buttons" />'));
+        elem.append(row);
+        elem.show();
+        </text>
+            }
+            else
+            {
+        <text>
+        loadShoppingListData();
 
         connection.on("NewItemCreated", function (itemId, title, isPending) {
-            var row = findRow(itemId);
+            row = findRow(itemId);
 
             if (row.length !== 1) {
                 var iconElem = createDefaultCheckBoxElement(isPending);
@@ -326,7 +394,7 @@
             }
         });
         connection.on("ItemPendingChanged", function (itemId, isPending) {
-            var row = findRow(itemId);
+            row = findRow(itemId);
 
             if (row.length === 1) {
                 setItemRowPending(row, isPending);
@@ -334,7 +402,7 @@
             }
         });
         connection.on("RemoveItem", function (itemId) {
-            var row = findRow(itemId);
+            row = findRow(itemId);
 
             if (row.length === 1) {
                 row.fadeOut(1000, function () { $(this).remove(); });
