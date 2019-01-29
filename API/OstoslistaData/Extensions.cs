@@ -34,5 +34,21 @@ namespace OstoslistaData
             item.Property(o => o.ProfileImageUrl).IsRequired(false).ValueGeneratedOnAdd();
             item.Property(o => o.Name).IsRequired();
         }
+
+        public static ShopperFriendEntity ToShopperFriend(this ShopperFriendRequestEntity item)
+        {
+            return new ShopperFriendEntity
+            {
+                ShopperId = item.ShopperId,
+                Email = item.Email,
+                Name = item.Name,
+                ProfileImageUrl = item.ProfileImageUrl
+            };
+        }
+
+        public static bool EmailMatch(this IEmail item, string email)
+        {
+            return string.Equals(item.Email, email, StringComparison.InvariantCultureIgnoreCase);
+        }
     }
 }

@@ -4,4 +4,89 @@
     ViewData["Title"] = "Minun ostoslistani";
 }
 
-<h1>Mun ostoslistani...</h1>
+<div class="text-center">
+    <h1><i class="far fa-user"></i> Minun ostoslistani</h1>
+    <div id="ostoslistatOsa" style="display: none;">
+        <div class="shoppingList" id="ostoslistat">Ladataan...</div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function loadMyShoppersSuccess(data) {
+        var ostoslistat = $("#ostoslistat");
+        ostoslistat.html("");
+
+        if (!data || data.length === 0) {
+            setShopperListEmpty();
+            return;
+        }
+
+        ostoslistat.hide();
+        ostoslistat.append(createShopperListHeader());
+
+        for (var i = 0; i < data.length; i++) {
+            ostoslistat.append(createShopperRow(data[i]));
+        };
+
+        ostoslistat.fadeIn(1000);
+    }
+
+    function createShopperListHeader() {
+        var row = $('<div class="shoppingList-item-row"></div>');
+        row.append($('<div class="shoppingList-item-cell myHeader">Ostoslista</div>'));
+        row.append($('<div class="shoppingList-item-cell myHeader columnWidth"><i class="fas fa-hashtag" title="Tuotteet"></i></div>'));
+        row.append($('<div class="shoppingList-item-cell myHeader columnWidth"><i class="fas fa-hand-holding-heart" title="Odottavat kaveripyynnöt"></i></div>'));
+        row.append($('<div class="shoppingList-item-cell myHeader columnWidth"><i class="fas fa-hands-helping" title="Kaverit"></i></div>'));
+        return row;
+    }
+
+    function createShopperRow(data) {
+        var row = $('<div class="shoppingList-item-row"></div>');
+        var col = $('<div class="shoppingList-item-cell" style="cursor: pointer;"></div>');
+        col.append($('<i class="fas fa-shopping-basket"></i>'));
+        col.append($('<span class="profileName"></span>').text(data.ShopperName));
+        col.click(function() {
+            window.location = "/?lista=" + encodeURIComponent(data.ShopperName);
+        });
+        row.append(col);
+        row.append($('<div class="shoppingList-item-cell columnWidth"></div>').text(data.ItemCount));
+        row.append($('<div class="shoppingList-item-cell columnWidth"></div>').text(data.FriendRequestCount));
+        row.append($('<div class="shoppingList-item-cell columnWidth"></div>').text(data.FriendCount));
+        col = $('<div class="shoppingList-item-cell columnWidth"></div>');
+        col.append($('<i class="fas fa-tasks" style="cursor: pointer;" title="Asetukset"></i>').click(function () {
+            window.location = "/Settings?lista=" + encodeURIComponent(data.ShopperName);
+        }));
+        row.append(col);
+        row.append($('<div class="shoppingList-item-cell columnWidth"><i class="far fa-trash-alt" title="Poista ostoslista"></i></div>'));
+        return row;
+    }
+
+    function setShopperListEmpty() {
+        var ostoslistat = $("#ostoslistat");
+        ostoslistat.html("");
+        var row = $('<span class="nothing"></span>').text('Lista on tyhjä');
+        row.hide().appendTo(ostoslistat).fadeIn(1000);
+    }
+
+    function loadMyShoppers() {
+        var elem = $("#ostoslistatOsa");
+        elem.show();
+
+        $.blockUI({ message: $('#waitIndContainer') });
+        $.ajax({
+            type: 'GET',
+            url: "/api/ShoppingList/getMyShoppers",
+            dataType: 'json',
+            success: loadMyShoppersSuccess,
+            error: function(e) {
+                console.log("ERROR: " + e.toString());
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        $.blockUI.defaults.css = {};
+        $(document).ajaxStop($.unblockUI);
+        loadMyShoppers();
+    });
+</script>

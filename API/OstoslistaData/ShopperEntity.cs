@@ -2,7 +2,7 @@
 
 namespace OstoslistaData
 {
-    public class ShopperEntity : BaseShopperSettingsEntity
+    public class ShopperEntity : BaseShopperSettingsEntity, IEmail
     {
         public string Name { get; set; }
         public string Email { get; set; }

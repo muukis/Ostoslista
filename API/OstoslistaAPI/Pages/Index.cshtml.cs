@@ -72,13 +72,29 @@ namespace OstoslistaAPI.Pages
                     return true;
                 }
 
-                if (!TryGetUserEmailIdentifierWithShopperCheck(out string emailIdentifier))
-                {
-                    return false;
-                }
-
-                return Shopper.FriendRequests?.Any(o => string.Equals(o.Email, emailIdentifier, StringComparison.InvariantCultureIgnoreCase)) ?? false;
+                return TryGetUserShopperFriendRequestId(out Guid temp);
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="shopperFriendId"></param>
+        /// <returns></returns>
+        public bool TryGetUserShopperFriendRequestId(out Guid shopperFriendId)
+        {
+            if (!TryGetUserEmailIdentifierWithShopperCheck(out string emailIdentifier))
+            {
+                shopperFriendId = Guid.Empty;
+                return false;
+            }
+
+            var shopperFriendRequest =
+                Shopper.FriendRequests?.SingleOrDefault(o => string.Equals(o.Email, emailIdentifier, StringComparison.InvariantCultureIgnoreCase));
+
+            shopperFriendId = shopperFriendRequest?.Id ?? Guid.Empty;
+
+            return shopperFriendId != Guid.Empty;
         }
 
         private bool TryGetUserEmailIdentifierWithShopperCheck(out string emailIdentifier)

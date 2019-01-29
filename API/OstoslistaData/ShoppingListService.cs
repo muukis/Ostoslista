@@ -48,5 +48,45 @@ namespace OstoslistaData
         {
             return await _dataService.SaveShopperSettings(shopperSettings);
         }
+
+        public async Task<ShopperFriendEntity> SetShopperFriendRequest(Guid shopperFriendRequestId, bool approve)
+        {
+            return await _dataService.SetShopperFriendRequest(shopperFriendRequestId, approve);
+        }
+
+        public async Task<ShopperFriendEntity> DeleteShopperFriend(Guid shopperFriendId)
+        {
+            return await _dataService.DeleteShopperFriend(shopperFriendId);
+        }
+
+        public async Task<ShopperFriendEntity> GetShopperFriend(Guid shopperFriendId)
+        {
+            return await _dataService.GetShopperFriend(shopperFriendId);
+        }
+
+        public async Task<ShopperFriendRequestEntity> GetShopperFriendRequest(Guid shopperFriendRequestId)
+        {
+            return await _dataService.GetShopperFriendRequest(shopperFriendRequestId);
+        }
+
+        public async Task<ShopperFriendRequestEntity> CreateShopperFriendRequest(Guid shopperId, string email, string name, string profileImageUrl)
+        {
+            return await _dataService.CreateShopperFriendRequest(shopperId, email, name, profileImageUrl);
+        }
+
+        public async Task<ShopperFriendRequestEntity> DeleteShopperFriendRequestByEmail(Guid shopperId, string email)
+        {
+            return await _dataService.DeleteShopperFriendRequestByEmail(shopperId, email);
+        }
+
+        public async Task<ShopperFriendEntity> DeleteShopperFriendByEmail(Guid shopperId, string email)
+        {
+            return await _dataService.DeleteShopperFriendByEmail(shopperId, email);
+        }
+
+        public async Task<IEnumerable<ShopperEntity>> GetMyShoppers(string email)
+        {
+            return await _dataService.GetMyShoppers(email);
+        }
     }
 }

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace OstoslistaData
 {
-    public abstract class BaseShopperFriendEntity : BaseShopperChildEntity
+    public abstract class BaseShopperFriendEntity : BaseShopperChildEntity, IEmail
     {
         public string Email { get; set; }
         public string ProfileImageUrl { get; set; }

@@ -47,7 +47,10 @@ namespace OstoslistaData
 
         public async Task<ShopperEntity> GetShopper(string shopperName)
         {
-            return await Ostaja.SingleOrDefaultAsync(o => string.Equals(o.Name, shopperName, StringComparison.InvariantCulture));
+            return await Ostaja
+                .Include(o => o.Friends)
+                .Include(o => o.FriendRequests)
+                .SingleOrDefaultAsync(o => string.Equals(o.Name, shopperName, StringComparison.InvariantCulture));
         }
 
         public async Task<ShopperEntity> CreateShopper(string shopperName, string emailIdentifier)
@@ -131,9 +134,132 @@ namespace OstoslistaData
             shopper.PublicWriteAccess = shopperSettings.PublicWriteAccess ?? shopper.PublicWriteAccess;
             shopper.FriendReadAccess = shopperSettings.FriendReadAccess ?? shopper.FriendReadAccess;
             shopper.FriendWriteAccess = shopperSettings.FriendWriteAccess ?? shopper.FriendWriteAccess;
+            shopper.Modified = DateTime.Now;
             await SaveChangesAsync();
 
             return shopper;
+        }
+
+        public async Task<ShopperFriendEntity> SetShopperFriendRequest(Guid shopperFriendRequestId, bool approve)
+        {
+            var shopperFriendRequest = await KaveriPyynto.FindAsync(shopperFriendRequestId);
+
+            if (shopperFriendRequest == null)
+            {
+                throw new ArgumentException("Invalid shopper friend request identifier", nameof(shopperFriendRequestId));
+            }
+
+            ShopperFriendEntity retval = null;
+
+            using (var tran = Database.BeginTransaction())
+            {
+                try
+                {
+                    KaveriPyynto.Remove(shopperFriendRequest);
+                    
+                    if (approve)
+                    {
+                        retval = shopperFriendRequest.ToShopperFriend();
+                        await Kaveri.AddAsync(retval);
+                    }
+
+                    await SaveChangesAsync();
+                    tran.Commit();
+                }
+                catch (Exception)
+                {
+                    tran.Rollback();
+                    throw;
+                }
+            }
+
+            return retval;
+        }
+
+        public async Task<ShopperFriendEntity> DeleteShopperFriend(Guid shopperFriendId)
+        {
+            var shopperFriend = await Kaveri.FindAsync(shopperFriendId);
+
+            if (shopperFriend == null)
+            {
+                throw new ArgumentException("Invalid shopper friend identifier", nameof(shopperFriendId));
+            }
+
+            Kaveri.Remove(shopperFriend);
+            await SaveChangesAsync();
+            return shopperFriend;
+        }
+
+        public async Task<ShopperFriendEntity> GetShopperFriend(Guid shopperFriendId)
+        {
+            return await Kaveri
+                .Include(o => o.Shopper)
+                .SingleOrDefaultAsync(o => o.Id == shopperFriendId);
+        }
+
+        public async Task<ShopperFriendRequestEntity> GetShopperFriendRequest(Guid shopperFriendRequestId)
+        {
+            return await KaveriPyynto
+                .Include(o => o.Shopper)
+                .SingleOrDefaultAsync(o => o.Id == shopperFriendRequestId);
+        }
+
+        public async Task<ShopperFriendRequestEntity> CreateShopperFriendRequest(Guid shopperId, string email, string name, string profileImageUrl)
+        {
+            var shopperFriendRequest = new ShopperFriendRequestEntity
+            {
+                Email = email,
+                Name = name,
+                ProfileImageUrl = profileImageUrl,
+                ShopperId = shopperId
+            };
+
+            await KaveriPyynto.AddAsync(shopperFriendRequest);
+            await SaveChangesAsync();
+
+            return shopperFriendRequest;
+        }
+
+        public async Task<ShopperFriendRequestEntity> DeleteShopperFriendRequestByEmail(Guid shopperId, string email)
+        {
+            var shopper = await Ostaja.FindAsync(shopperId);
+            var shopperFriendRequest = shopper.FriendRequests.SingleOrDefault(o => o.EmailMatch(email));
+
+            if (shopperFriendRequest == null)
+            {
+                return null;
+            }
+
+            KaveriPyynto.Remove(shopperFriendRequest);
+            await SaveChangesAsync();
+
+            return shopperFriendRequest;
+        }
+
+        public async Task<ShopperFriendEntity> DeleteShopperFriendByEmail(Guid shopperId, string email)
+        {
+            var shopper = await Ostaja.FindAsync(shopperId);
+            var shopperFriend = shopper.Friends.SingleOrDefault(o => o.EmailMatch(email));
+
+            if (shopperFriend == null)
+            {
+                return null;
+            }
+
+            Kaveri.Remove(shopperFriend);
+            await SaveChangesAsync();
+
+            return shopperFriend;
+        }
+
+        public async Task<IEnumerable<ShopperEntity>> GetMyShoppers(string email)
+        {
+            return await Ostaja
+                .Include(o => o.Items)
+                .Include(o => o.FriendRequests)
+                .Include(o => o.Friends)
+                .Where(o => o.EmailMatch(email))
+                .ToListAsync();
         }
     }
 }

@@ -317,6 +317,45 @@
         }
     }
 
+    @{
+        if (Model.Shopper?.AllowNewFriendRequests ?? false)
+        {
+    <text>
+    function removeShopperFriendRequest() {
+        $.blockUI({ message: $('#waitIndContainer') });
+        $.ajax({
+            type: 'DELETE',
+            url: "/api/ShoppingList/deleteMyShopperFriendRequest/@Model.UrlEncodedShopperName",
+            dataType: 'json',
+            success: function(data) {
+                // Reload page
+                window.location = window.location;
+            },
+            error: function(e) {
+                console.log("ERROR: " + e.toString());
+            }
+        });
+    }
+
+    function createShopperFriendRequest() {
+        $.blockUI({ message: $('#waitIndContainer') });
+        $.ajax({
+            type: 'GET',
+            url: "/api/ShoppingList/createShopperFriendRequest/@Model.UrlEncodedShopperName",
+            dataType: 'json',
+            success: function(data) {
+                // Reload page
+                window.location = window.location;
+            },
+            error: function(e) {
+                console.log("ERROR: " + e.toString());
+            }
+        });
+    }
+
+    </text>
+        }
+    }
     $(document).ready(function () {
         $.blockUI.defaults.css = {};
         $(document).ajaxStop($.unblockUI);
@@ -341,7 +380,7 @@
         <text>
         elem.append($('<h2 class="spaceAbove">Ostoslistan kaveripyyntöäsi ei ole vielä hyväksytty!</h2>'));
         row = $("<div></div>");
-        row.append($('<input type="button" value="Poista kaveripyyntö" onclick="alert(\'kukkuu1\');" class="buttons" />'));
+        row.append($('<input type="button" value="Poista kaveripyyntö" class="buttons" />').click(removeShopperFriendRequest));
         elem.append(row);
         </text>
                     }
@@ -354,7 +393,7 @@
                         {
         <text>
         row = $("<div></div>");
-        row.append($('<input type="button" value="Lähetä kaveripyyntö" onclick="alert(\'kukkuu2\');" class="buttons" />'));
+        row.append($('<input type="button" value="Lähetä kaveripyyntö" class="buttons" />').click(createShopperFriendRequest));
         elem.append(row);
         </text>
                         }
@@ -362,7 +401,7 @@
                         {
         <text>
         row = $("<div></div>");
-        row.append($('<a href="/Login" target="_self" title="Kirjaudu sisään Google tunnuksillasi"><i class="fas fa-sign-in-alt"></i> Kirjaudu sisään</a>'));
+        row.append($('<a href="/Login" target="_self" title="Kirjaudu sisään Google tunnuksillasi" class="text-dark"><i class="fas fa-sign-in-alt"></i> Kirjaudu sisään</a>'));
         elem.append(row);
         </text>
                         }
@@ -383,29 +422,39 @@
         <text>
         loadShoppingListData();
 
-        connection.on("NewItemCreated", function (itemId, title, isPending) {
+        connection.on("NewItemCreated", function(itemId, title, isPending) {
             row = findRow(itemId);
 
             if (row.length !== 1) {
                 var iconElem = createDefaultCheckBoxElement(isPending);
                 row = createItemRow(iconElem, title, itemId, true);
-                row.click(togglePending);
+                @{
+                    if (Model.UserIsWriteAuthenticated)
+                    {
+                        @:row.click(togglePending);
+                    }
+                } 
                 row.hide().appendTo("#ostoslista").fadeIn(1000);
             }
         });
-        connection.on("ItemPendingChanged", function (itemId, isPending) {
+        connection.on("ItemPendingChanged", function(itemId, isPending) {
             row = findRow(itemId);
 
             if (row.length === 1) {
                 setItemRowPending(row, isPending);
-                row.click(togglePending);
+                @{
+                    if (Model.UserIsWriteAuthenticated)
+                    {
+                        @:row.click(togglePending);
+                    }
+                } 
             }
         });
-        connection.on("RemoveItem", function (itemId) {
+        connection.on("RemoveItem", function(itemId) {
             row = findRow(itemId);
 
             if (row.length === 1) {
-                row.fadeOut(1000, function () { $(this).remove(); });
+                row.fadeOut(1000, function() { $(this).remove(); });
             }
         });
         connection.onclose(function() {
@@ -413,7 +462,7 @@
         });
         reconnectToHub();
         </text>
-            }
+                    }
         }
     });
 </script>

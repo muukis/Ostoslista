@@ -469,7 +469,7 @@ namespace OstoslistaAPI.Controllers
         }
 
         /// <summary>
-        /// Create new shopper
+        /// Get shopper settings
         /// </summary>
         /// <param name="shopperName">Shopper name</param>
         /// <returns>Shopper settings</returns>
@@ -513,7 +513,7 @@ namespace OstoslistaAPI.Controllers
         }
 
         /// <summary>
-        /// Create new shopper
+        /// Save shopper settings
         /// </summary>
         /// <param name="shopperSettings">Shopper name</param>
         /// <returns>Shopper settings</returns>
@@ -553,6 +553,357 @@ namespace OstoslistaAPI.Controllers
                     Code = HttpStatusCode.InternalServerError,
                     Classification = ErrorClassification.InternalError,
                     Message = "Failed setting shopper settings"
+                });
+            }
+        }
+
+        /// <summary>
+        /// Create new shopper
+        /// </summary>
+        /// <param name="shopperName">Shopper name</param>
+        /// <returns>Shopper settings</returns>
+        /// <response code="200">Array of shopper friend requests</response>
+        /// <response code="400">Invalid request</response>
+        /// <response code="401">Unauthorized request</response>
+        /// <response code="500">Internal server error</response>
+        [HttpGet]
+        [Route("{shopperName}/friendRequests")]
+        [ProducesResponseType(typeof(ShopperFriendRequestResult[]), 200)]
+        [ProducesResponseType(typeof(ErrorResult), 400)]
+        [ProducesResponseType(typeof(ErrorResult), 401)]
+        [ProducesResponseType(typeof(ErrorResult), 500)]
+        public async Task<IActionResult> GetShopperFriendRequests([FromRoute] string shopperName)
+        {
+            try
+            {
+                var shopper = await _service.GetShopper(shopperName);
+
+                if (!User.GetShopperOwnerAuthorization(shopper))
+                {
+                    return Error(new ErrorResult
+                    {
+                        Code = HttpStatusCode.Unauthorized,
+                        Classification = ErrorClassification.AuthorizationError,
+                        Message = "Unauthorized request"
+                    });
+                }
+
+                return Ok(shopper.FriendRequests.ToResults<ShopperFriendRequestResult>());
+            }
+            catch (Exception)
+            {
+                return Error(new ErrorResult
+                {
+                    Code = HttpStatusCode.InternalServerError,
+                    Classification = ErrorClassification.InternalError,
+                    Message = "Failed getting shopper friend requests"
+                });
+            }
+        }
+
+        /// <summary>
+        /// Create new shopper
+        /// </summary>
+        /// <param name="shopperName">Shopper name</param>
+        /// <returns>Shopper settings</returns>
+        /// <response code="200">Array of shopper friends</response>
+        /// <response code="400">Invalid request</response>
+        /// <response code="401">Unauthorized request</response>
+        /// <response code="500">Internal server error</response>
+        [HttpGet]
+        [Route("{shopperName}/friends")]
+        [ProducesResponseType(typeof(ShopperFriendResult[]), 200)]
+        [ProducesResponseType(typeof(ErrorResult), 400)]
+        [ProducesResponseType(typeof(ErrorResult), 401)]
+        [ProducesResponseType(typeof(ErrorResult), 500)]
+        public async Task<IActionResult> GetShopperFriends([FromRoute] string shopperName)
+        {
+            try
+            {
+                var shopper = await _service.GetShopper(shopperName);
+
+                if (!User.GetShopperOwnerAuthorization(shopper))
+                {
+                    return Error(new ErrorResult
+                    {
+                        Code = HttpStatusCode.Unauthorized,
+                        Classification = ErrorClassification.AuthorizationError,
+                        Message = "Unauthorized request"
+                    });
+                }
+
+                return Ok(shopper.Friends.ToResults<ShopperFriendResult>());
+            }
+            catch (Exception)
+            {
+                return Error(new ErrorResult
+                {
+                    Code = HttpStatusCode.InternalServerError,
+                    Classification = ErrorClassification.InternalError,
+                    Message = "Failed getting shopper friends"
+                });
+            }
+        }
+
+        /// <summary>
+        /// Set shopper friend request approved or rejected
+        /// </summary>
+        /// <param name="shopperFriendRequestId">Shopper friend request identifier</param>
+        /// <param name="approve">Approve shopper request identifier</param>
+        /// <returns>Shopper friend if approved</returns>
+        /// <response code="200">Shopper friend</response>
+        /// <response code="400">Invalid request</response>
+        /// <response code="401">Unauthorized request</response>
+        /// <response code="500">Internal server error</response>
+        [HttpPut]
+        [Route("setShopperFriendRequest/{shopperFriendRequestId}/{approve}")]
+        [ProducesResponseType(typeof(ShopperFriendResult), 200)]
+        [ProducesResponseType(typeof(ErrorResult), 400)]
+        [ProducesResponseType(typeof(ErrorResult), 401)]
+        [ProducesResponseType(typeof(ErrorResult), 500)]
+        public async Task<IActionResult> SetShopperFriendRequest([FromRoute] Guid shopperFriendRequestId, [FromRoute] bool approve)
+        {
+            try
+            {
+                var shopperFriendRequest = await _service.GetShopperFriendRequest(shopperFriendRequestId);
+
+                if (!User.GetShopperOwnerAuthorization(shopperFriendRequest.Shopper))
+                {
+                    return Error(new ErrorResult
+                    {
+                        Code = HttpStatusCode.Unauthorized,
+                        Classification = ErrorClassification.AuthorizationError,
+                        Message = "Unauthorized request"
+                    });
+                }
+
+                var retval = await _service.SetShopperFriendRequest(shopperFriendRequestId, approve);
+                return Ok(retval?.ToResult<ShopperFriendResult>());
+            }
+            catch (Exception)
+            {
+                return Error(new ErrorResult
+                {
+                    Code = HttpStatusCode.InternalServerError,
+                    Classification = ErrorClassification.InternalError,
+                    Message = $"Failed setting shopper friend request {(approve ? "approved" : "rejected")}"
+                });
+            }
+        }
+
+        /// <summary>
+        /// Delete shopper friend
+        /// </summary>
+        /// <param name="shopperFriendId">Shopper friend identifier</param>
+        /// <returns>Deleted shopper friend</returns>
+        /// <response code="200">Shopper friend</response>
+        /// <response code="400">Invalid request</response>
+        /// <response code="401">Unauthorized request</response>
+        /// <response code="500">Internal server error</response>
+        [HttpDelete]
+        [Route("deleteShopperFriend/{shopperFriendId}")]
+        [ProducesResponseType(typeof(ShopperFriendResult), 200)]
+        [ProducesResponseType(typeof(ErrorResult), 400)]
+        [ProducesResponseType(typeof(ErrorResult), 401)]
+        [ProducesResponseType(typeof(ErrorResult), 500)]
+        public async Task<IActionResult> DeleteShopperFriend([FromRoute] Guid shopperFriendId)
+        {
+            try
+            {
+                var shopperFriend = await _service.GetShopperFriend(shopperFriendId);
+
+                if (!User.GetShopperOwnerAuthorization(shopperFriend.Shopper) &&
+                    !string.Equals(shopperFriend.Email, User.GetUserEmailIdentifier(), StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return Error(new ErrorResult
+                    {
+                        Code = HttpStatusCode.Unauthorized,
+                        Classification = ErrorClassification.AuthorizationError,
+                        Message = "Unauthorized request"
+                    });
+                }
+
+                var retval = await _service.DeleteShopperFriend(shopperFriendId);
+                return Ok(retval?.ToResult<ShopperFriendResult>());
+            }
+            catch (Exception)
+            {
+                return Error(new ErrorResult
+                {
+                    Code = HttpStatusCode.InternalServerError,
+                    Classification = ErrorClassification.InternalError,
+                    Message = "Failed deleting shopper friend"
+                });
+            }
+        }
+
+        /// <summary>
+        /// Create shopper friend request
+        /// </summary>
+        /// <param name="shopperName">Shopper name</param>
+        /// <returns>Created shopper friend request</returns>
+        /// <response code="200">Shopper friend request</response>
+        /// <response code="400">Invalid request</response>
+        /// <response code="401">Unauthorized request</response>
+        /// <response code="500">Internal server error</response>
+        [HttpGet]
+        [Route("createShopperFriendRequest/{shopperName}")]
+        [ProducesResponseType(typeof(ShopperFriendRequestResult), 200)]
+        [ProducesResponseType(typeof(ErrorResult), 400)]
+        [ProducesResponseType(typeof(ErrorResult), 401)]
+        [ProducesResponseType(typeof(ErrorResult), 500)]
+        public async Task<IActionResult> CreateShopperFriendRequest([FromRoute] string shopperName)
+        {
+            try
+            {
+                var shopper = await _service.GetShopper(shopperName);
+
+                if (!(shopper?.AllowNewFriendRequests ?? false) ||
+                    !User.Identity.IsAuthenticated)
+                {
+                    return Error(new ErrorResult
+                    {
+                        Code = HttpStatusCode.Unauthorized,
+                        Classification = ErrorClassification.AuthorizationError,
+                        Message = "Unauthorized request"
+                    });
+                }
+
+                string userEmailIdentifier = User.GetUserEmailIdentifier();
+
+                if (shopper.FriendRequests.Any(o => string.Equals(o.Email, userEmailIdentifier, StringComparison.InvariantCultureIgnoreCase)) ||
+                    shopper.Friends.Any(o => string.Equals(o.Email, userEmailIdentifier, StringComparison.InvariantCultureIgnoreCase)))
+                {
+                    return Error(new ErrorResult
+                    {
+                        Code = HttpStatusCode.BadRequest,
+                        Classification = ErrorClassification.InvalidOperation,
+                        Message = "User is already shopper friend or shopper friend requested"
+                    });
+                }
+
+                var retval = await _service.CreateShopperFriendRequest(
+                    shopper.Id ?? Guid.Empty, userEmailIdentifier, User.Identity.Name, User.GetUserImageUrl());
+
+                return Ok(retval?.ToResult<ShopperFriendRequestResult>());
+            }
+            catch (Exception)
+            {
+                return Error(new ErrorResult
+                {
+                    Code = HttpStatusCode.InternalServerError,
+                    Classification = ErrorClassification.InternalError,
+                    Message = "Failed creating shopper friend requests"
+                });
+            }
+        }
+
+        /// <summary>
+        /// Delete my shopper friend request
+        /// </summary>
+        /// <param name="shopperName">Shopper name</param>
+        /// <returns>Deleted shopper friend request</returns>
+        /// <response code="200">Shopper friend request</response>
+        /// <response code="400">Invalid request</response>
+        /// <response code="401">Unauthorized request</response>
+        /// <response code="500">Internal server error</response>
+        [HttpDelete]
+        [Route("deleteMyShopperFriendRequest/{shopperName}")]
+        [ProducesResponseType(typeof(ShopperFriendRequestResult), 200)]
+        [ProducesResponseType(typeof(ErrorResult), 400)]
+        [ProducesResponseType(typeof(ErrorResult), 401)]
+        [ProducesResponseType(typeof(ErrorResult), 500)]
+        public async Task<IActionResult> DeleteMyShopperFriendRequest([FromRoute] string shopperName)
+        {
+            try
+            {
+                var shopper = await _service.GetShopper(shopperName);
+                var retval = await _service.DeleteShopperFriendRequestByEmail(shopper.Id ?? Guid.Empty, User.GetUserEmailIdentifier());
+                return Ok(retval?.ToResult<ShopperFriendRequestResult>());
+            }
+            catch (Exception)
+            {
+                return Error(new ErrorResult
+                {
+                    Code = HttpStatusCode.InternalServerError,
+                    Classification = ErrorClassification.InternalError,
+                    Message = "Failed deleting my shopper friend request"
+                });
+            }
+        }
+
+        /// <summary>
+        /// Delete my shopper friend
+        /// </summary>
+        /// <param name="shopperName">Shopper name</param>
+        /// <returns>Deleted shopper friend</returns>
+        /// <response code="200">Shopper friend</response>
+        /// <response code="400">Invalid request</response>
+        /// <response code="401">Unauthorized request</response>
+        /// <response code="500">Internal server error</response>
+        [HttpDelete]
+        [Route("deleteMyShopperFriend/{shopperName}")]
+        [ProducesResponseType(typeof(ShopperFriendResult), 200)]
+        [ProducesResponseType(typeof(ErrorResult), 400)]
+        [ProducesResponseType(typeof(ErrorResult), 401)]
+        [ProducesResponseType(typeof(ErrorResult), 500)]
+        public async Task<IActionResult> DeleteMyShopperFriend([FromRoute] string shopperName)
+        {
+            try
+            {
+                var shopper = await _service.GetShopper(shopperName);
+                var retval = await _service.DeleteShopperFriendByEmail(shopper.Id ?? Guid.Empty, User.GetUserEmailIdentifier());
+                return Ok(retval?.ToResult<ShopperFriendResult>());
+            }
+            catch (Exception)
+            {
+                return Error(new ErrorResult
+                {
+                    Code = HttpStatusCode.InternalServerError,
+                    Classification = ErrorClassification.InternalError,
+                    Message = "Failed deleting my shopper friend"
+                });
+            }
+        }
+
+        /// <summary>
+        /// Get my shoppers
+        /// </summary>
+        /// <returns>Array of my shoppers</returns>
+        /// <response code="200">List of shoppers</response>
+        /// <response code="400">Invalid request</response>
+        /// <response code="401">Unauthorized request</response>
+        /// <response code="500">Internal server error</response>
+        [HttpGet]
+        [Route("getMyShoppers")]
+        [ProducesResponseType(typeof(ShopperResult[]), 200)]
+        [ProducesResponseType(typeof(ErrorResult), 400)]
+        [ProducesResponseType(typeof(ErrorResult), 401)]
+        [ProducesResponseType(typeof(ErrorResult), 500)]
+        public async Task<IActionResult> GetMyShoppers()
+        {
+            try
+            {
+                if (!User.Identity.IsAuthenticated)
+                {
+                    return Error(new ErrorResult
+                    {
+                        Code = HttpStatusCode.Unauthorized,
+                        Classification = ErrorClassification.AuthorizationError,
+                        Message = "Unauthorized request"
+                    });
+                }
+
+                var retval = await _service.GetMyShoppers(User.GetUserEmailIdentifier());
+                return Ok(retval?.ToResults());
+            }
+            catch (Exception)
+            {
+                return Error(new ErrorResult
+                {
+                    Code = HttpStatusCode.InternalServerError,
+                    Classification = ErrorClassification.InternalError,
+                    Message = "Failed deleting my shopper friend"
                 });
             }
         }

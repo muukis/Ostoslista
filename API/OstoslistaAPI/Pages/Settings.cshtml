@@ -7,7 +7,16 @@
 <div class="text-center">
     <h1><i class="fas fa-tasks"></i> Asetukset@(string.IsNullOrWhiteSpace(Model.ShopperName) ? "" : $" ({Model.HtmlEncodedShopperName})")</h1>
     <div id="asetuksetOsa" style="display: none;">
-        <div class="shoppingList" id="asetukset">Ladataan...</div>
+        <div class="shoppingList spaceBelow" id="asetukset">Ladataan...</div>
+    </div>
+    <h1><i class="fas fa-user-friends"></i> Kaverit</h1>
+    <h3><i class="fas fa-hand-holding-heart"></i> Kaveripyynnöt</h3>
+    <div id="KaveriPyynnotOsa" style="display: none;">
+        <div class="shoppingList spaceBelow" id="kaveriPyynnot">Ladataan...</div>
+    </div>
+    <h3><i class="fas fa-hands-helping"></i> Kaverit</h3>
+    <div id="KaveritOsa" style="display: none;">
+        <div class="shoppingList" id="kaverit">Ladataan...</div>
     </div>
 </div>
 
@@ -17,6 +26,7 @@
         asetukset.html("");
 
         if (!data) {
+            asetukset.append($('<span class="nothing">Lista on tyhjä</span>'));
             return;
         }
 
@@ -32,6 +42,48 @@
         asetukset.fadeIn(1000);
     }
 
+    function setListEmpty(list) {
+        list.html("");
+        var row = $('<span class="nothing"></span>').text('Lista on tyhjä');
+        row.hide().appendTo(list).fadeIn(1000);
+    }
+
+    function loadFriendRequestsDataSuccess(data) {
+        var kaveriPyynnot = $("#kaveriPyynnot");
+        kaveriPyynnot.html("");
+
+        if (!data || data.length === 0) {
+            setListEmpty(kaveriPyynnot);
+            return;
+        }
+
+        kaveriPyynnot.hide();
+
+        for (var i = 0; i < data.length; i++) {
+            kaveriPyynnot.append(createFriendRequestRow(data[i]));
+        };
+
+        kaveriPyynnot.fadeIn(1000);
+    }
+
+    function loadFriendDataSuccess(data) {
+        var kaverit = $("#kaverit");
+        kaverit.html("");
+
+        if (!data || data.length === 0) {
+            setListEmpty(kaverit);
+            return;
+        }
+
+        kaverit.hide();
+
+        for (var i = 0; i < data.length; i++) {
+            kaverit.append(createFriendRow(data[i]));
+        };
+
+        kaverit.fadeIn(1000);
+    }
+
     function toggleSetting() {
         var row = $(this);
         var elem = row.find('i[name="asetusTikki"]');
@@ -44,9 +96,9 @@
         var setChecked = elem.hasClass("fa-circle");
         setItemRowAjaxRunning($(this));
 
-        var data = {};
-        data["Name"] = "@Model.EscapedShopperName";
-        data[row[0].id] = setChecked;
+        var dataPackage = {};
+        dataPackage["Name"] = "@Model.EscapedShopperName";
+        dataPackage[row[0].id] = setChecked;
 
         $.ajax({
             type: 'POST',
@@ -55,7 +107,7 @@
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
-            data: JSON.stringify(data),
+            data: JSON.stringify(dataPackage),
             success: function (data) {
                 setItemRowChecked(row, data[row[0].id]);
                 row.click(toggleSetting);
@@ -99,11 +151,113 @@
         var row = $('<div id="' + settingId + '" class="shoppingList-item-row" style="cursor: pointer";></div>');
         row.prop("title", title);
         row.append(createCheckBoxElement(isChecked));
-        var cell2 = $('<div class="shoppingList-item-cell"></div>');
-        cell2.append($('<span style="margin-left: 10px"></span>').text(title));
-        row.append(cell2);
+        var col = $('<div class="shoppingList-item-cell" style="padding-left: 10px"></div>').text(title);
+        row.append(col);
         row.click(toggleSetting);
         return row;
+    }
+
+    function createFriendRequestRow(data) {
+        var row = $('<div id="' + data.Id + '" class="shoppingList-item-row"></div>');
+        row.prop("title", data.Name);
+        var col1 = $('<div class="shoppingList-item-cell"></div>');
+        col1.append($('<img src="' + data.ProfileImageUrl + '" class="profile">'));
+        col1.append($('<span class="profileName" style="padding-right: 20px;"></span>').text(data.Name));
+        row.append(col1);
+        var col2 = $('<div class="shoppingList-item-cell"></div>');
+        col2.append($('<i class="fas fa-check" style="cursor: pointer; color: green;" title="Hyväksy kaveripyyntö"></i>').click(approveFriendRequest));
+        row.append(col2);
+        var col3 = $('<div class="shoppingList-item-cell" style="padding-left: 10px;"></div>');
+        col3.append($('<i class="fas fa-times" style="cursor: pointer; color: red;" title="Hylkää kaveripyyntö"></i>').click(rejectFriendRequest));
+        row.append(col3);
+        return row;
+    }
+
+    function createFriendRow(data) {
+        var row = $('<div id="' + data.Id + '" class="shoppingList-item-row"></div>');
+        row.prop("title", data.Name);
+        var col1 = $('<div class="shoppingList-item-cell"></div>');
+        col1.append($('<img src="' + data.ProfileImageUrl + '" class="profile">'));
+        col1.append($('<span class="profileName" style="padding-right: 20px;"></span>').text(data.Name));
+        row.append(col1);
+        var col2 = $('<div class="shoppingList-item-cell"></div>');
+        var poistaKaveri = $('<i name="poistaKaveri" class="fas fa-heart" style="cursor: pointer; color: red;" title="Poista kaveri"></i>');
+        poistaKaveri.click(removeFriend);
+        poistaKaveri.hover(function () {
+            $(this).removeClass("fa-heart");
+            $(this).addClass("fa-heart-broken");
+        }, function() {
+            $(this).removeClass("fa-heart-broken");
+            $(this).addClass("fa-heart");
+        });
+        col2.append(poistaKaveri);
+        row.append(col2);
+        return row;
+    }
+
+    function approveFriendRequest() {
+        var row = $(this).closest("div.shoppingList-item-row");
+        setShopperFriendRequest(row, true);
+    }
+
+    function rejectFriendRequest() {
+        var row = $(this).closest("div.shoppingList-item-row");
+        setShopperFriendRequest(row, false);
+    }
+
+    function setShopperFriendRequest(row, approve) {
+        var url = "/api/ShoppingList/setShopperFriendRequest/" + row[0].id + "/" + approve;
+
+        $.ajax({
+            type: 'PUT',
+            url: url,
+            dataType: 'json',
+            success: function (data) {
+                row.fadeOut(1000, function() {
+                    $(this).remove();
+                    if (approve) {
+                        var kaveritList = $("#kaverit").find("div");
+                        if (kaveritList.length === 0) {
+                            $("#kaverit").html("");
+                        }
+                        var newRow = createFriendRow(data).hide();
+                        newRow.hide().appendTo("#kaverit").fadeIn(1000);
+                    }
+                    var kaveriPyynnotList = $("#kaveriPyynnot");
+                    var list = kaveriPyynnotList.find("div");
+                    if (list.length === 0) {
+                        setListEmpty(kaveriPyynnotList);
+                    }
+                });
+            },
+            error: function (e) {
+                console.log("ERROR: " + e.toString());
+            }
+        });
+    }
+
+    function removeFriend() {
+        var row = $(this).closest("div.shoppingList-item-row");
+        var url = "/api/ShoppingList/deleteShopperFriend/" + row[0].id;
+
+        $.ajax({
+            type: 'DELETE',
+            url: url,
+            dataType: 'json',
+            success: function () {
+                row.fadeOut(1000, function() {
+                    $(this).remove();
+                    var kaveritList = $("#kaverit");
+                    var list = kaveritList.find("div");
+                    if (list.length === 0) {
+                        setListEmpty(kaveritList);
+                    }
+                });
+            },
+            error: function (e) {
+                console.log("ERROR: " + e.toString());
+            }
+        });
     }
 
     function createCheckBoxElement(isChecked) {
@@ -116,19 +270,66 @@
         return iconElem;
     }
 
-    function loadSettingsData() {
+    function loadPageInfo() {
         var elem = $("#asetuksetOsa");
         elem.show();
 
+        elem = $("#KaveriPyynnotOsa");
+        elem.show();
+
+        elem = $("#KaveritOsa");
+        elem.show();
+
+        loadSettingsData();
+    }
+
+    function loadSettingsData() {
         $.blockUI({ message: $('#waitIndContainer') });
         $.ajax({
             type: 'GET',
             url: "/api/ShoppingList/@Model.UrlEncodedShopperName/settings",
             dataType: 'json',
-            success: loadSettingsDataSuccess,
+            success: function(data) {
+                loadSettingsDataSuccess(data);
+                loadFriendRequestsData();
+            },
             error: function(e) {
                 console.log("ERROR: " + e.toString());
                 loadSettingsDataSuccess();
+                loadFriendRequestsDataSuccess();
+                loadFriendDataSuccess();
+            }
+        });
+    }
+
+    function loadFriendRequestsData() {
+        $.ajax({
+            type: 'GET',
+            url: "/api/ShoppingList/@Model.UrlEncodedShopperName/friendRequests",
+            dataType: 'json',
+            success: function(data) {
+                loadFriendRequestsDataSuccess(data);
+                loadFriendData();
+            },
+            error: function(e) {
+                console.log("ERROR: " + e.toString());
+                loadFriendRequestsDataSuccess();
+                loadFriendDataSuccess();
+            }
+        });
+    }
+
+    function loadFriendData() {
+        $.ajax({
+            type: 'GET',
+            url: "/api/ShoppingList/@Model.UrlEncodedShopperName/friends",
+            dataType: 'json',
+            success: function(data) {
+                loadFriendDataSuccess(data);
+            },
+            error: function(e) {
+                console.log("ERROR: " + e.toString());
+                loadFriendDataSuccess();
             }
         });
     }
@@ -136,6 +337,6 @@
     $(document).ready(function () {
         $.blockUI.defaults.css = {};
         $(document).ajaxStop($.unblockUI);
-        loadSettingsData();
+        loadPageInfo();
     });
 </script>

@@ -87,13 +87,13 @@
 
     .shoppingList-item-row {
         overflow: hidden;
-        white-space: nowrap;
+        /*white-space: nowrap;*/
         display: table-row;
     }
 
     .shoppingList-item-cell {
         overflow: hidden;
-        white-space: nowrap;
+        /*white-space: nowrap;*/
         display: table-cell;
     }
 
@@ -122,6 +122,11 @@
 
     img.profile {
         border-radius: 50%;
+        vertical-align: middle;
+    }
+
+    span.profileName {
+        padding-left: 5px;
     }
 
     #searchInput {
@@ -146,6 +151,19 @@
 
     a:hover {
         text-decoration: none;
+    }
+
+    .nothing {
+        color: gray;
+    }
+
+    .myHeader {
+        font-size: 12px;
+    }
+
+    .columnWidth {
+        min-width: 35px;
+        text-align: center;
     }
 </style>
 
@@ -201,11 +219,11 @@
                             {
                                 <li class="nav-item dropdown">
                                     <a class="nav-link text-dark dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        <img src="@User.GetUserImageUrl()" class="profile" /> @User.Identity.Name
+                                        <img src="@User.GetUserImageUrl()" class="profile" /><span class="profileName">@User.Identity.Name</span>
                                     </a>
                                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                                         <a class="nav-link text-dark" asp-area="" asp-page="/MyShoppers" title="Kirjaudu sisään Google tunnuksillasi">
-                                            <i class="fas fa-search"></i> Minun ostoslistani
+                                            <i class="far fa-user"></i> Minun ostoslistani
                                         </a>
                                         <div class="dropdown-divider"></div>
                                         <a class="nav-link text-dark" asp-area="" asp-page="/Logout" title="Kirjaudu sisään Google tunnuksillasi">
