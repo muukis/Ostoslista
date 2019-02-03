@@ -88,5 +88,15 @@ namespace OstoslistaData
         {
             return await _dataService.GetMyShoppers(email);
         }
+
+        public async Task<IEnumerable<ShopperEntity>> GetFriendRequestedShoppers(string email)
+        {
+            return await _dataService.GetFriendRequestedShoppers(email);
+        }
+
+        public async Task<IEnumerable<ShopperEntity>> GetFriendShoppers(string email)
+        {
+            return await _dataService.GetFriendShoppers(email);
+        }
     }
 }

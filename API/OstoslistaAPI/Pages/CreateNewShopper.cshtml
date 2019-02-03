@@ -6,6 +6,17 @@
 
 <div class="text-center">
     <h1><i class="fa fa-plus-circle"></i> Luo uusi ostoslista</h1>
+    @{
+        if (!Model.User.Identity.IsAuthenticated)
+        {
+    <text>
+    <div class="spaceBelow">
+        <span>Pystyt hallitsemaan ostoslistaasi paremmin, jos kirjaudut ensin sisään!</span><br/>
+        <a href="/Login" target="_self" title="Kirjaudu sisään Google tunnuksillasi" class="text-dark"><i class="fas fa-sign-in-alt"></i> Kirjaudu tästä ensin sisään</a>
+    </div>
+    </text>
+        }
+    }
     <div>
         Syötä ostoslistan yksilöllinen nimi:&nbsp;
         <input type="text"

@@ -65,25 +65,55 @@ namespace OstoslistaContracts
             return shopperFriends.Select(o => o.ToResult<T>());
         }
 
-        public static ShopperResult ToResult(this ShopperEntity shopper)
+        public static T ToResult<T>(this ShopperEntity shopper, Action<T> propertySetter = null)
+            where T : BaseShoppersResult, new()
         {
-            return new ShopperResult
+            var retval = new T
             {
                 ShopperName = shopper.Name,
-                AllowNewFriends = shopper.AllowNewFriendRequests ?? false,
-                PublicReadAccess = shopper.PublicReadAccess ?? false,
-                PublicWriteAccess = shopper.PublicWriteAccess ?? false,
-                FriendReadAccess = shopper.FriendReadAccess ?? false,
-                FriendWriteAccess = shopper.FriendWriteAccess ?? false,
-                ItemCount = shopper.Items.Count,
-                FriendRequestCount = shopper.FriendRequests.Count,
-                FriendCount = shopper.Friends.Count,
             };
+
+            propertySetter?.Invoke(retval);
+            return retval;
         }
 
-        public static IEnumerable<ShopperResult> ToResults(this IEnumerable<ShopperEntity> shoppers)
+        public static IEnumerable<T> ToResults<T>(this IEnumerable<ShopperEntity> shoppers, Action<T> propertySetter = null)
+            where T : BaseShoppersResult, new()
         {
-            return shoppers.Select(o => o.ToResult());
+            return shoppers.Select(o => o.ToResult(propertySetter));
+        }
+
+        public static FriendShoppersResult ToFriendShoppersResult(this ShopperEntity shopper)
+        {
+            return shopper.ToResult<FriendShoppersResult>(o =>
+            {
+                o.ItemCount = shopper.Items.Count;
+            });
+        }
+
+        public static IEnumerable<FriendShoppersResult> ToFriendShoppersResult(this IEnumerable<ShopperEntity> shoppers)
+        {
+            return shoppers.Select(o => o.ToFriendShoppersResult());
+        }
+
+        public static MyShopperResult ToMyShopperResult(this ShopperEntity shopper)
+        {
+            return shopper.ToResult<MyShopperResult>(o =>
+            {
+                o.ItemCount = shopper.Items.Count;
+                o.AllowNewFriends = shopper.AllowNewFriendRequests ?? false;
+                o.PublicReadAccess = shopper.PublicReadAccess ?? false;
+                o.PublicWriteAccess = shopper.PublicWriteAccess ?? false;
+                o.FriendReadAccess = shopper.FriendReadAccess ?? false;
+                o.FriendWriteAccess = shopper.FriendWriteAccess ?? false;
+                o.FriendRequestCount = shopper.FriendRequests.Count;
+                o.FriendCount = shopper.Friends.Count;
+            });
+        }
+
+        public static IEnumerable<MyShopperResult> ToMyShopperResults(this IEnumerable<ShopperEntity> shoppers)
+        {
+            return shoppers.Select(o => o.ToMyShopperResult());
         }
     }
 }

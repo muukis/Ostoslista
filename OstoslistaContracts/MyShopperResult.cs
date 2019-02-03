@@ -1,9 +1,7 @@
 ﻿namespace OstoslistaContracts
 {
-    public class ShopperResult
+    public class MyShopperResult : BaseExtendedShoppersResult
     {
-        public string ShopperName { get; set; }
-        public int ItemCount { get; set; }
         public int FriendRequestCount { get; set; }
         public int FriendCount { get; set; }
         public bool AllowNewFriends { get; set; }

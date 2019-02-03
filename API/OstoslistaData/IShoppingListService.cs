@@ -22,5 +22,7 @@ namespace OstoslistaData
         Task<ShopperFriendRequestEntity> DeleteShopperFriendRequestByEmail(Guid shopperId, string email);
         Task<ShopperFriendEntity> DeleteShopperFriendByEmail(Guid shopperId, string email);
         Task<IEnumerable<ShopperEntity>> GetMyShoppers(string email);
+        Task<IEnumerable<ShopperEntity>> GetFriendRequestedShoppers(string email);
+        Task<IEnumerable<ShopperEntity>> GetFriendShoppers(string email);
     }
 }

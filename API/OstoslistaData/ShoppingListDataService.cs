@@ -252,14 +252,30 @@ namespace OstoslistaData
             return shopperFriend;
         }
 
+        public async Task<IEnumerable<ShopperEntity>> GetFriendRequestedShoppers(string email)
+        {
+            return await KaveriPyynto
+                .Include(kp => kp.Shopper)
+                .Where(kp => kp.EmailMatch(email))
+                .Select(kp => kp.Shopper)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<ShopperEntity>> GetFriendShoppers(string email)
+        {
+            return await Kaveri
+                .Include(k => k.Shopper)
+                .Where(k => k.EmailMatch(email))
+                .Select(k => k.Shopper)
+                .ToListAsync();
+        }
+
         public async Task<IEnumerable<ShopperEntity>> GetMyShoppers(string email)
         {
-            return await Ostaja
-                .Include(o => o.Items)
-                .Include(o => o.FriendRequests)
-                .Include(o => o.Friends)
+            var t = await Ostaja
                 .Where(o => o.EmailMatch(email))
                 .ToListAsync();
+            return t;
         }
     }
 }

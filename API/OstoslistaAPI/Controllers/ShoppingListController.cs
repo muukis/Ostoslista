@@ -869,14 +869,14 @@ namespace OstoslistaAPI.Controllers
         /// <summary>
         /// Get my shoppers
         /// </summary>
-        /// <returns>Array of my shoppers</returns>
+        /// <returns>All the shoppers the user is involved in</returns>
         /// <response code="200">List of shoppers</response>
         /// <response code="400">Invalid request</response>
         /// <response code="401">Unauthorized request</response>
         /// <response code="500">Internal server error</response>
         [HttpGet]
         [Route("getMyShoppers")]
-        [ProducesResponseType(typeof(ShopperResult[]), 200)]
+        [ProducesResponseType(typeof(MyShoppersResult), 200)]
         [ProducesResponseType(typeof(ErrorResult), 400)]
         [ProducesResponseType(typeof(ErrorResult), 401)]
         [ProducesResponseType(typeof(ErrorResult), 500)]
@@ -894,8 +894,15 @@ namespace OstoslistaAPI.Controllers
                     });
                 }
 
-                var retval = await _service.GetMyShoppers(User.GetUserEmailIdentifier());
-                return Ok(retval?.ToResults());
+                var email = User.GetUserEmailIdentifier();
+                var retval = new MyShoppersResult
+                {
+                    MyShoppers = (await _service.GetMyShoppers(email)).ToMyShopperResults(),
+                    FriendShoppers = (await _service.GetFriendShoppers(email)).ToFriendShoppersResult(),
+                    FriendRequestedShoppers = (await _service.GetFriendRequestedShoppers(email)).ToResults<FriendRequestedShoppersResult>(),
+                };
+
+                return Ok(retval);
             }
             catch (Exception)
             {
@@ -903,7 +910,7 @@ namespace OstoslistaAPI.Controllers
                 {
                     Code = HttpStatusCode.InternalServerError,
                     Classification = ErrorClassification.InternalError,
-                    Message = "Failed deleting my shopper friend"
+                    Message = "Failed getting my shoppers"
                 });
             }
         }
