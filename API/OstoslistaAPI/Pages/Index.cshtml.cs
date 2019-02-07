@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using OstoslistaAPI.Common;
 using OstoslistaAPI.Models;
@@ -20,8 +20,9 @@ namespace OstoslistaAPI.Pages
         /// 
         /// </summary>
         /// <param name="shoppingListService"></param>
-        public IndexModel(IShoppingListService shoppingListService)
-            : base(shoppingListService)
+        /// <param name="hostingEnvironment"></param>
+        public IndexModel(IShoppingListService shoppingListService, IHostingEnvironment hostingEnvironment)
+            : base(shoppingListService, hostingEnvironment)
         {
         }
 
@@ -115,5 +116,10 @@ namespace OstoslistaAPI.Pages
 
             return true;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public string ShopperRootUrl => $"{SiteRootUrl}?lista={Uri.EscapeUriString(Shopper?.Name)}";
     }
 }

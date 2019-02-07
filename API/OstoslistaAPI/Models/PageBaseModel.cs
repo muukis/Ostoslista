@@ -1,4 +1,6 @@
-﻿using System.Web;
+﻿using System;
+using System.Web;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using OstoslistaAPI.Common;
@@ -11,8 +13,18 @@ namespace OstoslistaAPI.Models
     /// </summary>
     public abstract class PageBaseModel : PageModel
     {
+        /// <summary>
+        /// 
+        /// </summary>
         protected const string _shopperNameKey = "shopperName";
+        /// <summary>
+        /// 
+        /// </summary>
         protected readonly IShoppingListService _shoppingListService;
+        /// <summary>
+        /// 
+        /// </summary>
+        protected readonly IHostingEnvironment _hostingEnvironment;
 
         /// <summary>
         /// 
@@ -23,9 +35,11 @@ namespace OstoslistaAPI.Models
         /// 
         /// </summary>
         /// <param name="shoppingListService"></param>
-        protected PageBaseModel(IShoppingListService shoppingListService)
+        /// <param name="hostingEnvironment"></param>
+        protected PageBaseModel(IShoppingListService shoppingListService, IHostingEnvironment hostingEnvironment)
         {
             _shoppingListService = shoppingListService;
+            _hostingEnvironment = hostingEnvironment;
         }
 
         /// <summary>
@@ -85,5 +99,26 @@ namespace OstoslistaAPI.Models
         /// 
         /// </summary>
         public bool UserIsOwnerAuthenticated => Shopper != null && User.GetShopperOwnerAuthorization(Shopper);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public string MailTo => (Shopper == null ? null : $"mailto:?subject={Uri.EscapeUriString($"Ostoslistan linkki")}&body={Uri.EscapeUriString($"Hei,\n\nMennään yhdessä kauppareissulle!\n\nTässä on linkki ostoslistaan:\n{SiteRootUrl}?lista={Uri.EscapeUriString(Shopper.Name)}\n\n")}");
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public string SiteRootUrl => $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{HttpContext.Request.Path}";
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        public string GetBase64EncodedHtmlEmelentImageSource(string url)
+        {
+            var qrImage = new QRImage();
+            return $"data:image/png;base64,{qrImage.CreateBase64EncodedQRImageFromUrl(url)}";
+        }
     }
 }

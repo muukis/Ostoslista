@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using OstoslistaAPI.Models;
 using OstoslistaData;
@@ -16,8 +17,9 @@ namespace OstoslistaAPI.Pages
         /// 
         /// </summary>
         /// <param name="shoppingListService"></param>
-        public SettingsModel(IShoppingListService shoppingListService)
-            : base(shoppingListService)
+        /// <param name="hostingEnvironment"></param>
+        public SettingsModel(IShoppingListService shoppingListService, IHostingEnvironment hostingEnvironment)
+            : base(shoppingListService, hostingEnvironment)
         {
         }
 

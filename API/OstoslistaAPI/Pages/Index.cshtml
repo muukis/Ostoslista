@@ -1,5 +1,4 @@
 ﻿@page
-@using System.Web
 @model OstoslistaAPI.Pages.IndexModel
 @{
     ViewData["Title"] = "Tuotteet";
@@ -8,6 +7,41 @@
 <div class="text-center">
     <h1><i class="fas fa-shopping-basket"></i> Ostoslista@(string.IsNullOrWhiteSpace(Model.ShopperName) ? "" : $" ({Model.HtmlEncodedShopperName})")</h1>
     @{
+        if (Model.Shopper != null && Model.UserIsReadAuthenticated)
+        {
+    <text>
+    <div>
+        <a href="@Model.MailTo" class="text-dark"><i class="far fa-envelope"></i> Lähetä ostoslistan WWW-osoite sähköpostilla</a><br />
+        <a href="#" class="text-dark" id="showQRCode"><i class="fas fa-qrcode"></i> Näytä QR-koodi tähän ostoslistaan</a>
+        <div id="dialog" title="Ostoslistan linkki" style="display: none;">
+            <img src="@Model.GetBase64EncodedHtmlEmelentImageSource(Model.ShopperRootUrl)" alt="Linkki ostoslistaan"/>
+        </div>
+        <script>
+            $(function() {
+                $("#dialog").dialog({
+                    modal: true,
+                    height: "auto",
+                    width: "auto",
+                    autoOpen: false,
+                });
+
+                $("#showQRCode").on("click",
+                    function() {
+                        $("#dialog").dialog("open");
+                    });
+
+                $(document).bind("click",
+                    function (e) {
+                        if (e.target.id === "showQRCode") {
+                            return;
+                        }
+                        $("#dialog").dialog("close");
+                    });
+            });
+        </script>
+    </div>
+    </text>
+        }
     }
     <div id="ostolistaTuotteet" style="display: none;">
         @{
