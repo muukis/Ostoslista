@@ -4,6 +4,17 @@
     ViewData["Title"] = "Tuotteet";
 }
 
+<style type="text/css">
+    .ui-dialog-titlebar-close {
+        visibility: hidden;
+    }
+
+    .ui-dialog .ui-dialog-title {
+        text-align: center;
+        width: 100%;
+    }
+</style>
+
 <div class="text-center">
     <h1><i class="fas fa-shopping-basket"></i> Ostoslista@(string.IsNullOrWhiteSpace(Model.ShopperName) ? "" : $" ({Model.HtmlEncodedShopperName})")</h1>
     @{
