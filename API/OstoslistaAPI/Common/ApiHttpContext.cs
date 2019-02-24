@@ -3,7 +3,7 @@
 namespace OstoslistaAPI.Common
 {
     /// <summary>
-    /// 
+    /// HttpContext
     /// </summary>
     public static class ApiHttpContext
     {
