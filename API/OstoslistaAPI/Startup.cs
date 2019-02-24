@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.PlatformAbstractions;
 using Newtonsoft.Json.Serialization;
+using OstoslistaAPI.Common;
 using OstoslistaAPI.Hubs;
 using OstoslistaData;
 using Swashbuckle.AspNetCore.Swagger;
@@ -111,6 +112,8 @@ namespace OstoslistaAPI
                         }
                     });
 
+                c.OperationFilter<ApiOperationFilters>();
+
                 if (System.IO.File.Exists(xmlComments))
                 {
                     c.IncludeXmlComments(xmlComments);
@@ -146,6 +149,10 @@ namespace OstoslistaAPI
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            ApiHttpContext.Configure(
+                app.ApplicationServices.GetRequiredService<Microsoft.AspNetCore.Http.IHttpContextAccessor>()
+            );
 
             app.UseStaticFiles();
             app.UseSession();

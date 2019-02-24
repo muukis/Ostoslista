@@ -56,7 +56,7 @@ namespace OstoslistaAPI.Controllers
             {
                 var shopper = await _service.GetShopper(shopperName);
 
-                if (!User.GetShopperReadAuthorization(shopper))
+                if (!shopper.BypassAuthentication() && !User.GetShopperReadAuthorization(shopper))
                 {
                     return Error(new ErrorResult
                     {
@@ -245,7 +245,7 @@ namespace OstoslistaAPI.Controllers
 
                 var shopper = await _service.GetShopper(shopperName);
 
-                if (!User.GetShopperWriteAuthorization(shopper))
+                if (!shopper.BypassAuthentication() && !User.GetShopperWriteAuthorization(shopper))
                 {
                     return Error(new ErrorResult
                     {
@@ -297,7 +297,7 @@ namespace OstoslistaAPI.Controllers
             {
                 var item = (await _service.FindItems(o => o.Id == shoppingListItemId)).Single();
 
-                if (!User.GetShopperWriteAuthorization(item.Shopper))
+                if (!item.Shopper.BypassAuthentication() && !User.GetShopperWriteAuthorization(item.Shopper))
                 {
                     return Error(new ErrorResult
                     {
@@ -348,7 +348,7 @@ namespace OstoslistaAPI.Controllers
             {
                 var item = (await _service.FindItems(o => o.Id == shoppingListItemId)).Single();
 
-                if (!User.GetShopperWriteAuthorization(item.Shopper))
+                if (!item.Shopper.BypassAuthentication() && !User.GetShopperWriteAuthorization(item.Shopper))
                 {
                     return Error(new ErrorResult
                     {
@@ -410,7 +410,7 @@ namespace OstoslistaAPI.Controllers
             {
                 var shopper = await _service.GetShopper(shopperName);
 
-                if (!User.GetShopperWriteAuthorization(shopper))
+                if (!shopper.BypassAuthentication() && !User.GetShopperWriteAuthorization(shopper))
                 {
                     return Error(new ErrorResult
                     {

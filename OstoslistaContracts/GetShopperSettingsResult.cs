@@ -7,5 +7,7 @@
         public bool PublicReadAccess { get; set; }
         public bool FriendWriteAccess { get; set; }
         public bool FriendReadAccess { get; set; }
+        public bool ShowAdditionalButtons { get; set; }
+        public string ApiAuthorizationBypassPassword { get; set; }
     }
 }

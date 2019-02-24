@@ -7,7 +7,7 @@
 <div class="text-center">
     <h1><i class="fas fa-tasks"></i> Asetukset@(string.IsNullOrWhiteSpace(Model.ShopperName) ? "" : $" ({Model.HtmlEncodedShopperName})")</h1>
     <div id="asetuksetOsa" style="display: none;">
-        <div class="shoppingList spaceBelow" id="asetukset">Ladataan...</div>
+        <div class="spaceBelow" id="asetukset">Ladataan...</div>
     </div>
     <h1><i class="fas fa-user-friends"></i> Kaverit</h1>
     <h3><i class="fas fa-hand-holding-heart"></i> Kaveripyynnöt</h3>
@@ -21,6 +21,36 @@
 </div>
 
 <script type="text/javascript">
+    function keyPress(e) {
+        if (e.keyCode === 13) {
+            setApiPassword();
+            return false;
+        }
+    }
+
+    function setApiPassword() {
+        var apiPassword = $("#apiPassword");
+
+        if (!apiPassword) {
+            return;
+        }
+
+        var dataPackage = {};
+        dataPackage["Name"] = "@Model.EscapedShopperName";
+        dataPackage["ApiAuthorizationBypassPassword"] = apiPassword.val();
+
+        $.blockUI({ message: $('#waitIndContainer') });
+
+        saveSetting(dataPackage,
+            function(data) {
+                alert("kukkuu");
+            },
+            function(e) {
+                console.log("ERROR: " + e.toString());
+                alert("pöö");
+            });
+    }
+
     function loadSettingsDataSuccess(data) {
         var asetukset = $("#asetukset");
         asetukset.html("");
@@ -32,12 +62,37 @@
 
         asetukset.hide();
 
-        asetukset.append(createSettingsRow("PublicReadAccess", data.PublicReadAccess, "Kuka tahansa voi lukea ostoslistaa"));
-        asetukset.append(createSettingsRow("PublicWriteAccess", data.PublicWriteAccess, "Kuka tahansa voi lukea ja kirjoittaa ostoslistaan"));
-        asetukset.append($('<div class="spaceBelow"></div>'));
-        asetukset.append(createSettingsRow("AllowNewFriendRequests", data.AllowNewFriendRequests, "Salli uudet kaveripyynnöt"));
-        asetukset.append(createSettingsRow("FriendReadAccess", data.FriendReadAccess, "Kaverit voivat lukea ostoslistaa"));
-        asetukset.append(createSettingsRow("FriendWriteAccess", data.FriendWriteAccess, "Kaverit voivat lukea ja kirjoittaa ostoslistaan"));
+        var listElem = $('<div class="shoppingList"></div>');
+
+        listElem.append(createSettingsRow("PublicReadAccess", data.PublicReadAccess, "Kuka tahansa voi lukea ostoslistaa"));
+        listElem.append(createSettingsRow("PublicWriteAccess", data.PublicWriteAccess, "Kuka tahansa voi lukea ja kirjoittaa ostoslistaan"));
+        listElem.append($('<div class="spaceBelow"></div>'));
+        listElem.append(createSettingsRow("AllowNewFriendRequests", data.AllowNewFriendRequests, "Salli uudet kaveripyynnöt"));
+        listElem.append(createSettingsRow("FriendReadAccess", data.FriendReadAccess, "Kaverit voivat lukea ostoslistaa"));
+        listElem.append(createSettingsRow("FriendWriteAccess", data.FriendWriteAccess, "Kaverit voivat lukea ja kirjoittaa ostoslistaan"));
+        listElem.append($('<div class="spaceBelow"></div>'));
+        listElem.append(createSettingsRow("ShowAdditionalButtons", data.ShowAdditionalButtons, "Näytä ostoslistan lisänapit"));
+
+        asetukset.append(listElem);
+
+        var apiPasswordElem = $('<div class="about spaceAbove"></div>');
+
+        apiPasswordElem.append($('<div style="text-align: center;"><h5>Salasana API tunnistautumisen ohittamiseen:</h5></div>'));
+        apiPasswordElem.append(
+            $('<div>Tämä on tarkoitettu tiettyjen API kutsujen tunnistautumisen ohittamiseen. ' +
+            'Sinun ei tarvitse välittää tästä, jos et käytä ostoslistaa muuten kuin web sivuilta. ' +
+                'Jätä tyhjäksi jos et tarvitse tai et tiedä mikä tämä on.</div>'));
+
+        var apiPasswordInputElem = $('<div style="text-align: center;"></div>');
+
+        apiPasswordInputElem.append(
+            $('<input type="text" id="apiPassword" onkeypress="return keyPress(event);" ' +
+                'title="Syötä salasana API tunnistautumisen ohittamiseen" class= "newItem"/>').val(data.ApiAuthorizationBypassPassword));
+        apiPasswordInputElem.append($('<span>&nbsp;</span>'));
+        apiPasswordInputElem.append($('<input type="button" value="Aseta" onclick="setApiPassword();" class="buttons" />'));
+
+        apiPasswordElem.append(apiPasswordInputElem);
+        asetukset.append(apiPasswordElem);
 
         asetukset.fadeIn(1000);
     }
@@ -84,6 +139,20 @@
         kaverit.fadeIn(1000);
     }
 
+    function saveSetting(dataPackage, successDelegate, errorDelegate) {
+        $.ajax({
+            type: 'POST',
+            url: "/api/ShoppingList/saveShopperSettings",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify(dataPackage),
+            success: successDelegate,
+            error: errorDelegate
+        });
+    }
+
     function toggleSetting() {
         var row = $(this);
         var elem = row.find('i[name="asetusTikki"]');
@@ -100,24 +169,16 @@
         dataPackage["Name"] = "@Model.EscapedShopperName";
         dataPackage[row[0].id] = setChecked;
 
-        $.ajax({
-            type: 'POST',
-            url: "/api/ShoppingList/saveShopperSettings",
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            data: JSON.stringify(dataPackage),
-            success: function (data) {
+        saveSetting(dataPackage,
+            function(data) {
                 setItemRowChecked(row, data[row[0].id]);
                 row.click(toggleSetting);
             },
-            error: function(e) {
+            function(e) {
                 console.log("ERROR: " + e.toString());
                 setItemRowChecked(row, !setChecked);
                 row.click(toggleSetting);
-            }
-        });
+            });
     }
 
     function setItemRowChecked(row, isChecked) {

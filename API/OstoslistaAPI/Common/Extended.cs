@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Http;
 using OstoslistaData;
 
 namespace OstoslistaAPI.Common
@@ -97,6 +98,28 @@ namespace OstoslistaAPI.Common
 
             return shopper?.Email != null &&
                    string.Equals(shopper.Email, userEmailAddressId, StringComparison.InvariantCultureIgnoreCase);
+        }
+
+        /// <summary>
+        /// Get API authorization bypass password from request headers
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public static string GetApiAuthorizationBypassPassword(this HttpRequest request)
+        {
+            return request.Headers["apiPassword"];
+        }
+
+        /// <summary>
+        /// Check API password from request headers and check if it matches shopper API password
+        /// </summary>
+        /// <param name="shopper"></param>
+        /// <returns>True if shopper password is set (not null or empty) and the passwords match</returns>
+        public static bool BypassAuthentication(this ShopperEntity shopper)
+        {
+            return string.IsNullOrEmpty(shopper.ApiAuthorizationBypassPassword) ||
+                   string.Equals(shopper.ApiAuthorizationBypassPassword,
+                       ApiHttpContext.Current.Request.GetApiAuthorizationBypassPassword());
         }
     }
 }

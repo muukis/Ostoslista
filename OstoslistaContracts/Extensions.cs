@@ -32,7 +32,9 @@ namespace OstoslistaContracts
                 PublicReadAccess = settings.PublicReadAccess,
                 PublicWriteAccess = settings.PublicWriteAccess,
                 FriendReadAccess = settings.FriendReadAccess,
-                FriendWriteAccess = settings.FriendWriteAccess
+                FriendWriteAccess = settings.FriendWriteAccess,
+                ShowAdditionalButtons = settings.ShowAdditionalButtons,
+                ApiAuthorizationBypassPassword = settings.ApiAuthorizationBypassPassword
             };
         }
 
@@ -44,7 +46,9 @@ namespace OstoslistaContracts
                 PublicReadAccess = shopper.PublicReadAccess ?? false,
                 PublicWriteAccess = shopper.PublicWriteAccess ?? false,
                 FriendReadAccess = shopper.FriendReadAccess ?? false,
-                FriendWriteAccess = shopper.FriendWriteAccess ?? false
+                FriendWriteAccess = shopper.FriendWriteAccess ?? false,
+                ShowAdditionalButtons = shopper.ShowAdditionalButtons ?? true,
+                ApiAuthorizationBypassPassword = shopper.ApiAuthorizationBypassPassword
             };
         }
 

@@ -24,6 +24,8 @@ namespace OstoslistaData
             shopper.Property(o => o.PublicReadAccess).IsRequired(false).ValueGeneratedOnAdd();
             shopper.Property(o => o.FriendWriteAccess).IsRequired(false).ValueGeneratedOnAdd();
             shopper.Property(o => o.FriendReadAccess).IsRequired(false).ValueGeneratedOnAdd();
+            shopper.Property(o => o.ShowAdditionalButtons).IsRequired(false).ValueGeneratedOnAdd();
+            shopper.Property(o => o.ApiAuthorizationBypassPassword).IsRequired(false).HasMaxLength(1024);
             shopper.HasMany(o => o.Items).WithOne(o => o.Shopper);
             shopper.HasMany(o => o.Friends).WithOne(o => o.Shopper);
             shopper.HasMany(o => o.FriendRequests).WithOne(o => o.Shopper);
@@ -134,6 +136,8 @@ namespace OstoslistaData
             shopper.PublicWriteAccess = shopperSettings.PublicWriteAccess ?? shopper.PublicWriteAccess;
             shopper.FriendReadAccess = shopperSettings.FriendReadAccess ?? shopper.FriendReadAccess;
             shopper.FriendWriteAccess = shopperSettings.FriendWriteAccess ?? shopper.FriendWriteAccess;
+            shopper.ShowAdditionalButtons = shopperSettings.ShowAdditionalButtons ?? shopper.ShowAdditionalButtons;
+            shopper.ApiAuthorizationBypassPassword = shopperSettings.ApiAuthorizationBypassPassword ?? shopper.ApiAuthorizationBypassPassword;
             shopper.Modified = DateTime.Now;
             await SaveChangesAsync();
 
