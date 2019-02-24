@@ -20,7 +20,22 @@ namespace OstoslistaAPI.Common
         public static string GetUserImageUrl(this ClaimsPrincipal user, int size = 20)
         {
             var retval = user.Claims.Single(o => o.Type == "profileImg").Value;
-            return Regex.Replace(retval, @"\?sz=\d+", $"?sz={size}");
+
+            if (Regex.IsMatch(retval, @"\?sz=\d+"))
+            {
+                return Regex.Replace(retval, @"\?sz=\d+", $"?sz={size}");
+            }
+
+            if (!retval.Contains('?'))
+            {
+                retval += '?';
+            }
+            else
+            {
+                retval += '&';
+            }
+
+            return retval + $"sz={size}";
         }
 
         /// <summary>

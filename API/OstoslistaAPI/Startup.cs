@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.OAuth;
@@ -70,12 +71,20 @@ namespace OstoslistaAPI
                 {
                     googleOptions.ClientId = Configuration["Authentication:Google:ClientId"];
                     googleOptions.ClientSecret = Configuration["Authentication:Google:ClientSecret"];
+                    googleOptions.UserInformationEndpoint = "https://www.googleapis.com/oauth2/v2/userinfo";
+                    googleOptions.ClaimActions.Clear();
+                    googleOptions.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "id");
+                    googleOptions.ClaimActions.MapJsonKey(ClaimTypes.Name, "name");
+                    googleOptions.ClaimActions.MapJsonKey(ClaimTypes.GivenName, "given_name");
+                    googleOptions.ClaimActions.MapJsonKey(ClaimTypes.Surname, "family_name");
+                    googleOptions.ClaimActions.MapJsonKey("urn:google:profile", "link");
+                    googleOptions.ClaimActions.MapJsonKey(ClaimTypes.Email, "email");
                     googleOptions.Events = new OAuthEvents
                     {
                         OnCreatingTicket = context =>
                         {
                             var identity = (ClaimsIdentity) context.Principal.Identity;
-                            var profileImg = context.User["image"].Value<string>("url");
+                            var profileImg = context.User["picture"].ToString();
                             identity.AddClaim(new Claim("profileImg", profileImg));
                             return Task.FromResult(0);
                         }
