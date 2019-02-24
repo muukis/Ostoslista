@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using F23.StringSimilarity;
+using F23.StringSimilarity.Interfaces;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -51,7 +53,7 @@ namespace OstoslistaAPI
         /// <summary>
         /// 
         /// </summary>
-        public IConfiguration Configuration { get; }
+        public static IConfiguration Configuration { get; set; }
 
         /// <summary>
         /// 

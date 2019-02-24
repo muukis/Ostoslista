@@ -9,8 +9,4 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="2.2.2" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\OstoslistaInterfaces\OstoslistaInterfaces.csproj" />
-  </ItemGroup>
-
 </Project>

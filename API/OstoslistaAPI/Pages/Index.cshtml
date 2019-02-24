@@ -69,8 +69,8 @@
             {
         <text>
         <div>
-            <input type="text" id="uusiTuote" placeholder="Syötä uusi tuote..." onkeypress="return keyPress(event, sendNew);" class="newItem"/>&nbsp;
-            <input type="button" value="Lähetä" onclick="sendNew();" class="buttons"/>
+            <input type="text" id="uusiTuote" placeholder="Syötä uusi tuote..." onkeypress="return keyPress(event, checkSimilarities);" class="newItem"/>&nbsp;
+            <input type="button" value="Lähetä" onclick="checkSimilarities();" class="buttons"/>
         </div>
         </text>
             }
@@ -232,19 +232,40 @@
         });
     }
 
-    function sendNew() {
-        var elem = $("#uusiTuote");
+    function checkSimilarities() {
+        var uusiTuote = $("#uusiTuote");
 
-        if (!elem) {
+        if (!uusiTuote) {
             return;
         }
 
-        var title = elem.val().trim();
+        var title = uusiTuote.val().trim();
 
         if (!title) {
             return;
         }
 
+        $.ajax({
+            type: 'POST',
+            url: "/api/ShoppingList/@Model.UrlEncodedShopperName/findSimilarities",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify({
+                Title: title
+            }),
+            success: function (data) {
+                console.log("Similarities found: " + data.length);
+                sendNew(uusiTuote, title);
+            },
+            error: function(e) {
+                console.log("ERROR: " + e.toString());
+            }
+        });
+    }
+
+    function sendNew(uusiTuote, title) {
         $.ajax({
             type: 'POST',
             url: "/api/ShoppingList/@Model.UrlEncodedShopperName",
@@ -257,8 +278,8 @@
             }),
             success: function () {
                 checkConnectionState();
-                elem.val("");
-                elem.focus();
+                uusiTuote.val("");
+                uusiTuote.focus();
             },
             error: function(e) {
                 console.log("ERROR: " + e.toString());

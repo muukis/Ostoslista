@@ -39,7 +39,7 @@ namespace OstoslistaAPI.Controllers
         /// Get all shopping list items
         /// </summary>
         /// <param name="shopperName">Shopper name</param>
-        /// <returns><see cref="ShoppingListItemResult"/> object</returns>
+        /// <returns>Array of <see cref="ShoppingListItemResult"/> objects</returns>
         /// <response code="200">Array of shopping list items</response>
         /// <response code="400">Invalid request</response>
         /// <response code="401">Unauthorized request</response>
@@ -66,7 +66,7 @@ namespace OstoslistaAPI.Controllers
                     });
                 }
 
-                var items = (await _service.FindItems(o => string.Equals(o.Shopper.Name, shopperName, StringComparison.InvariantCulture))).ToResults();
+                var items = shopper.Items.ToResults();
                 return Ok(items.OrderBy(o => o.Title));
             }
             catch (Exception)
@@ -76,6 +76,53 @@ namespace OstoslistaAPI.Controllers
                     Code = HttpStatusCode.InternalServerError,
                     Classification = ErrorClassification.InternalError,
                     Message = "Failed getting shopping list items"
+                });
+            }
+        }
+
+        /// <summary>
+        /// Get similar shopping list items
+        /// </summary>
+        /// <returns>All the shoppers the user is involved in</returns>
+        /// <param name="shopperName">Shopper name</param>
+        /// <param name="title">Shopping list item title</param>
+        /// <returns>Array of <see cref="ShoppingListItemResult"/> objects</returns>
+        /// <response code="200">List of shoppers</response>
+        /// <response code="400">Invalid request</response>
+        /// <response code="401">Unauthorized request</response>
+        /// <response code="500">Internal server error</response>
+        [HttpPost]
+        [Route("{shopperName}/findSimilarities")]
+        [ProducesResponseType(typeof(ShoppingListItemResult[]), 200)]
+        [ProducesResponseType(typeof(ErrorResult), 400)]
+        [ProducesResponseType(typeof(ErrorResult), 401)]
+        [ProducesResponseType(typeof(ErrorResult), 500)]
+        public async Task<IActionResult> GetSimilarShoppingListItems([FromRoute] string shopperName, [FromBody] ShoppingListTitleDto title)
+        {
+            try
+            {
+                var shopper = await _service.GetShopper(shopperName);
+
+                if (!shopper.BypassAuthentication() && !User.GetShopperReadAuthorization(shopper))
+                {
+                    return Error(new ErrorResult
+                    {
+                        Code = HttpStatusCode.Unauthorized,
+                        Classification = ErrorClassification.AuthorizationError,
+                        Message = "Unauthorized request"
+                    });
+                }
+
+                var items = shopper.FindSimilarities(title.Title).ToResults();
+                return Ok(items.OrderBy(o => o.Title));
+            }
+            catch (Exception)
+            {
+                return Error(new ErrorResult
+                {
+                    Code = HttpStatusCode.InternalServerError,
+                    Classification = ErrorClassification.InternalError,
+                    Message = "Failed getting similar shopping list items"
                 });
             }
         }

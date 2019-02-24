@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
+using F23.StringSimilarity;
+using F23.StringSimilarity.Interfaces;
 using Microsoft.AspNetCore.Http;
 using OstoslistaData;
 
@@ -12,6 +16,19 @@ namespace OstoslistaAPI.Common
     /// </summary>
     public static class Extended
     {
+        private static readonly double _stringSimilarityTreshold;
+        private static readonly IStringSimilarity _stringSimilarity;
+
+        static Extended()
+        {
+            _stringSimilarityTreshold = double.TryParse(
+                Startup.Configuration["Authentication:Google:ClientId"] as string,
+                NumberStyles.None, CultureInfo.GetCultureInfo("fi-fi"), out double similarityTreshold)
+                ? similarityTreshold
+                : 0.80;
+            _stringSimilarity = new JaroWinkler();
+        }
+
         /// <summary>
         /// Get authenticated user image URL
         /// </summary>
@@ -135,6 +152,17 @@ namespace OstoslistaAPI.Common
             return string.IsNullOrEmpty(shopper.ApiAuthorizationBypassPassword) ||
                    string.Equals(shopper.ApiAuthorizationBypassPassword,
                        ApiHttpContext.Current.Request.GetApiAuthorizationBypassPassword());
+        }
+
+        /// <summary>
+        /// Find similar shopping list items
+        /// </summary>
+        /// <param name="shopper"></param>
+        /// <param name="title"></param>
+        /// <returns></returns>
+        public static List<ShoppingListItemEntity> FindSimilarities(this ShopperEntity shopper, string title)
+        {
+            return shopper.Items.Where(o => _stringSimilarity.Similarity(o.Title.ToLower(), title.ToLower()) >= _stringSimilarityTreshold).ToList();
         }
     }
 }
