@@ -87,7 +87,8 @@
 
         apiPasswordInputElem.append(
             $('<input type="text" id="apiPassword" onkeypress="return keyPress(event);" ' +
-                'title="Syötä salasana API tunnistautumisen ohittamiseen" class= "newItem"/>').val(data.ApiAuthorizationBypassPassword));
+                'title="Syötä salasana API tunnistautumisen ohittamiseen" class= "newItem" ' +
+                'placeholder="Tyhjä"/>').val(data.ApiAuthorizationBypassPassword));
         apiPasswordInputElem.append($('<span>&nbsp;</span>'));
         apiPasswordInputElem.append($('<input type="button" value="Aseta" onclick="setApiPassword();" class="buttons" />'));
 

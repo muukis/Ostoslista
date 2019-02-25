@@ -13,6 +13,16 @@
         text-align: center;
         width: 100%;
     }
+
+    #vertailuTuote {
+        color: tomato;
+    }
+
+    #samankaltaisetTuotteet {
+        font-size: 12px;
+        padding-top: 10px;
+        color: tomato;
+    }
 </style>
 
 <div class="text-center">
@@ -68,6 +78,10 @@
             if (Model.UserIsWriteAuthenticated)
             {
         <text>
+        <div id="similaritiesDialog" title="Samankaltaisia tuotteita..." style="display: none;">
+            <div id="similaritiesHeader">Ostoskorista löytyy tuotteelle <span id="vertailuTuote">---</span><br/>samankaltaisia tuotteita:</div>
+            <div style="text-align: center;"><div id="samankaltaisetTuotteet"></div></div>
+        </div>
         <div>
             <input type="text" id="uusiTuote" placeholder="Syötä uusi tuote..." onkeypress="return keyPress(event, checkSimilarities);" class="newItem"/>&nbsp;
             <input type="button" value="Lähetä" onclick="checkSimilarities();" class="buttons"/>
@@ -176,8 +190,13 @@
         setItemRowValues(row, data.Title, data.Id);
     }
 
-    function createItemRow(iconElem, title, itemId, addPlus) {
-        var row = $('<div class="shoppingList-item-row" style="cursor: @(Model.UserIsWriteAuthenticated ? "pointer" : "default")";></div>');
+    function createItemRow(iconElem, title, itemId, addPlus, withStyle = true) {
+        var row = $('<div class="shoppingList-item-row"></div>');
+
+        if (withStyle) {
+            row.prop("style", "cursor: @(Model.UserIsWriteAuthenticated ? "pointer" : "default")");
+        }
+
         row.prop("title", title);
         row.append(iconElem);
         var cell2 = $('<div class="shoppingList-item-cell"></div>');
@@ -219,6 +238,31 @@
         if (Model.UserIsWriteAuthenticated)
         {
     <text>
+
+    $("#similaritiesDialog").dialog({
+        modal: true,
+        height: "auto",
+        width: "auto",
+        autoOpen: false,
+        buttons: {
+            "Lähetä silti": function() {
+                var uusiTuote = $("#uusiTuote");
+
+                if (!uusiTuote) {
+                    return;
+                }
+
+                var title = uusiTuote.val().trim();
+                sendNew(uusiTuote, title);
+
+                $(this).dialog("close");
+            },
+            "Peruuta": function() {
+                $(this).dialog("close");
+            }
+        }
+    });
+
     function buyCheckedItems() {
         $.blockUI({ message: $('#waitIndContainer') });
         $.ajax({
@@ -230,6 +274,25 @@
                 console.log("ERROR: " + e.toString());
             }
         });
+    }
+
+    function showSimilarities(data, title) {
+        $("#vertailuTuote").text(title);
+
+        var samankaltaisetTuotteetElem = $("#samankaltaisetTuotteet");
+        samankaltaisetTuotteetElem.html("");
+
+        for (var i = 0; data && i < data.length; i++) {
+            addItemToSimilarityList(samankaltaisetTuotteetElem, data[i]);
+        };
+
+        $("#similaritiesDialog").dialog("open");
+    }
+
+    function addItemToSimilarityList(samankaltaisetTuotteetElem, data) {
+        var iconElem = createDefaultCheckBoxElement(data.Pending);
+        var row = createItemRow(iconElem, data.Title, data.Id, false, false);
+        samankaltaisetTuotteetElem.append(row);
     }
 
     function checkSimilarities() {
@@ -256,8 +319,11 @@
                 Title: title
             }),
             success: function (data) {
-                console.log("Similarities found: " + data.length);
-                sendNew(uusiTuote, title);
+                if (data.length > 0) {
+                    showSimilarities(data, title);
+                } else {
+                    sendNew(uusiTuote, title);
+                }
             },
             error: function(e) {
                 console.log("ERROR: " + e.toString());
