@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
@@ -280,6 +281,36 @@ namespace OstoslistaAPI.Controllers
         {
             try
             {
+                var titleWithGroupName = Regex.Match((title ?? string.Empty).Trim(), @"^#(.+)#(.+)$");
+
+                if (titleWithGroupName.Success)
+                {
+                    var tempTitle = titleWithGroupName.Groups[2].Value.Trim();
+                    var tempGroupName = titleWithGroupName.Groups[1].Value.Trim();
+
+                    if (tempGroupName != null && tempGroupName.Length == 0)
+                    {
+                        return Error(new ErrorResult
+                        {
+                            Code = HttpStatusCode.BadRequest,
+                            Classification = ErrorClassification.InvalidArgument,
+                            Message = "Invalid title with group name value (group name empty)"
+                        });
+                    }
+
+                    if (tempTitle != null && tempTitle.Length == 0)
+                    {
+                        return Error(new ErrorResult
+                        {
+                            Code = HttpStatusCode.BadRequest,
+                            Classification = ErrorClassification.InvalidArgument,
+                            Message = "Invalid title with group name value (title empty)"
+                        });
+                    }
+
+                    title = $"#{tempGroupName}#{tempTitle}";
+                }
+
                 if (string.IsNullOrWhiteSpace(title))
                 {
                     return Error(new ErrorResult

@@ -116,9 +116,10 @@
     function loadShoppingListDataSuccess(data) {
         var ostoslista = $("#ostoslista");
         ostoslista.html("");
+        var lastGroupName = null;
 
         for (var i = 0; data && i < data.length; i++) {
-            addItemToList(data[i]);
+            lastGroupName = addItemToList(data[i], false, lastGroupName);
         };
     }
 
@@ -219,16 +220,42 @@
         return iconElem;
     }
 
-    function addItemToList(data, addPlus) {
+    function addItemToList(data, addPlus, lastGroupName) {
+        var title = data.Title;
+        var groupNameMatch = /^#(.+)#(.+)$/.exec(title);
+        var groupName = null;
+        var spaceAbove = false;
+
+        if (groupNameMatch) {
+            groupName = groupNameMatch[1];
+            title = groupNameMatch[2];
+
+            if (!lastGroupName || groupName.toUpperCase() !== lastGroupName.toUpperCase()) {
+                lastGroupName = groupName;
+            }
+        }
+
+        if (groupName !== lastGroupName) {
+            spaceAbove = true;
+        }
+
         var iconElem = createDefaultCheckBoxElement(data.Pending);
-        var row = createItemRow(iconElem, data.Title, data.Id, addPlus);
+        var row = createItemRow(iconElem, title, data.Id, addPlus);
         @{
             if (Model.UserIsWriteAuthenticated)
             {
                 @:row.click(togglePending);
             }
         }
+
+        if (spaceAbove) {
+            row.removeClass("spaceAbove");
+            row.addClass("spaceAbove");
+        }
+
         row.hide().appendTo("#ostoslista").fadeIn(1000);
+
+        return lastGroupName;
     }
     </text>
         }
