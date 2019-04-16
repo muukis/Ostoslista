@@ -384,7 +384,7 @@ namespace OstoslistaAPI.Controllers
         /// <response code="401">Unauthorized request</response>
         /// <response code="500">Internal server error</response>
         [HttpDelete]
-        [Route("{shoppingListItemId}")]
+        [Route("{shoppingListItemId}/delete")]
         [ProducesResponseType(typeof(int), 200)]
         [ProducesResponseType(typeof(ErrorResult), 400)]
         [ProducesResponseType(typeof(ErrorResult), 401)]
@@ -406,7 +406,7 @@ namespace OstoslistaAPI.Controllers
                 }
 
                 var items = (await _service.DeleteItems(o => o.Id == shoppingListItemId)).ToList();
-                await SendDeleteMessageToHub(items);
+                await SendRemoveItemMessageToHub(items);
                 return Ok(items.Count);
             }
             catch (Exception)
@@ -420,7 +420,53 @@ namespace OstoslistaAPI.Controllers
             }
         }
 
-        private async Task SendDeleteMessageToHub(List<ShoppingListItemEntity> items)
+        /// <summary>
+        /// Archive shopping list item
+        /// </summary>
+        /// <param name="shoppingListItemId">Shopping list item identifier</param>
+        /// <returns>Count of deleted shopping items</returns>
+        /// <response code="200">Count of deleted shopping items</response>
+        /// <response code="400">Invalid request</response>
+        /// <response code="401">Unauthorized request</response>
+        /// <response code="500">Internal server error</response>
+        [HttpDelete]
+        [Route("{shoppingListItemId}/archive")]
+        [ProducesResponseType(typeof(int), 200)]
+        [ProducesResponseType(typeof(ErrorResult), 400)]
+        [ProducesResponseType(typeof(ErrorResult), 401)]
+        [ProducesResponseType(typeof(ErrorResult), 500)]
+        public async Task<IActionResult> ArchiveShoppingListItem([FromRoute] Guid shoppingListItemId)
+        {
+            try
+            {
+                var item = (await _service.FindItems(o => o.Id == shoppingListItemId)).Single();
+
+                if (!item.Shopper.BypassAuthentication() && !User.GetShopperWriteAuthorization(item.Shopper))
+                {
+                    return Error(new ErrorResult
+                    {
+                        Code = HttpStatusCode.Unauthorized,
+                        Classification = ErrorClassification.AuthorizationError,
+                        Message = "Unauthorized request"
+                    });
+                }
+
+                var items = (await _service.ArchiveItems(o => o.Id == shoppingListItemId)).ToList();
+                await SendRemoveItemMessageToHub(items);
+                return Ok(items.Count);
+            }
+            catch (Exception)
+            {
+                return Error(new ErrorResult
+                {
+                    Code = HttpStatusCode.InternalServerError,
+                    Classification = ErrorClassification.InternalError,
+                    Message = "Failed archiving shopping list item"
+                });
+            }
+        }
+
+        private async Task SendRemoveItemMessageToHub<T>(ICollection<T> items) where T : IHubItemRemove
         {
             if (items?.Count > 0)
             {
@@ -446,7 +492,7 @@ namespace OstoslistaAPI.Controllers
         /// <response code="401">Unauthorized request</response>
         /// <response code="500">Internal server error</response>
         [HttpDelete]
-        [Route("{shopperName}/unpending")]
+        [Route("{shopperName}/unpending/delete")]
         [ProducesResponseType(typeof(int), 200)]
         [ProducesResponseType(typeof(ErrorResult), 400)]
         [ProducesResponseType(typeof(ErrorResult), 401)]
@@ -468,7 +514,7 @@ namespace OstoslistaAPI.Controllers
                 }
 
                 var items = (await _service.DeleteItems(o => string.Equals(o.Shopper.Name, shopperName, StringComparison.InvariantCulture) && o.Pending == false)).ToList();
-                await SendDeleteMessageToHub(items);
+                await SendRemoveItemMessageToHub(items);
                 return Ok(items.Count);
             }
             catch (Exception)
@@ -478,6 +524,52 @@ namespace OstoslistaAPI.Controllers
                     Code = HttpStatusCode.InternalServerError,
                     Classification = ErrorClassification.InternalError,
                     Message = "Failed deleting shopping list item"
+                });
+            }
+        }
+
+        /// <summary>
+        /// Delete all unpending shopping list items
+        /// </summary>
+        /// <param name="shopperName">Shopper name</param>
+        /// <returns>Count of deleted unpending shopping items</returns>
+        /// <response code="200">Count of deleted unpending shopping items</response>
+        /// <response code="400">Invalid request</response>
+        /// <response code="401">Unauthorized request</response>
+        /// <response code="500">Internal server error</response>
+        [HttpDelete]
+        [Route("{shopperName}/unpending/archive")]
+        [ProducesResponseType(typeof(int), 200)]
+        [ProducesResponseType(typeof(ErrorResult), 400)]
+        [ProducesResponseType(typeof(ErrorResult), 401)]
+        [ProducesResponseType(typeof(ErrorResult), 500)]
+        public async Task<IActionResult> ArchiveAllUnpendingShoppingListItems([FromRoute] string shopperName)
+        {
+            try
+            {
+                var shopper = await _service.GetShopper(shopperName);
+
+                if (!shopper.BypassAuthentication() && !User.GetShopperWriteAuthorization(shopper))
+                {
+                    return Error(new ErrorResult
+                    {
+                        Code = HttpStatusCode.Unauthorized,
+                        Classification = ErrorClassification.AuthorizationError,
+                        Message = "Unauthorized request"
+                    });
+                }
+
+                var items = (await _service.ArchiveItems(o => string.Equals(o.Shopper.Name, shopperName, StringComparison.InvariantCulture) && o.Pending == false)).ToList();
+                await SendRemoveItemMessageToHub(items);
+                return Ok(items.Count);
+            }
+            catch (Exception)
+            {
+                return Error(new ErrorResult
+                {
+                    Code = HttpStatusCode.InternalServerError,
+                    Classification = ErrorClassification.InternalError,
+                    Message = "Failed archiving shopping list item"
                 });
             }
         }

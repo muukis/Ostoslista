@@ -40,12 +40,19 @@ namespace OstoslistaData
             item.InitBaseShopperChildEntity(o => o.Items);
             item.Property(o => o.Pending).IsRequired(false).ValueGeneratedOnAdd();
             item.Property(o => o.Title).IsRequired().HasMaxLength(100);
+
+            var archivedItem = modelBuilder.Entity<ArchivedShoppingListItemEntity>();
+            archivedItem.HasKey(o => o.Id);
+            archivedItem.Property(o => o.Archived).IsRequired(false).ValueGeneratedOnAdd();
+            archivedItem.Property(o => o.ShopperId).IsRequired();
+            archivedItem.HasOne(o => o.Shopper).WithMany(o => o.ArchivedItems);
         }
 
         public virtual DbSet<ShopperEntity> Ostaja { get; set; }
         public virtual DbSet<ShopperFriendEntity> Kaveri { get; set; }
         public virtual DbSet<ShopperFriendRequestEntity> KaveriPyynto { get; set; }
         public virtual DbSet<ShoppingListItemEntity> Ostoslista { get; set; }
+        public virtual DbSet<ArchivedShoppingListItemEntity> Arkisto { get; set; }
 
         public async Task<ShopperEntity> GetShopper(string shopperName)
         {
@@ -112,6 +119,16 @@ namespace OstoslistaData
             await SaveChangesAsync();
 
             return shoppingListItem;
+        }
+
+        public async Task<IEnumerable<ShoppingListItemEntity>> ArchiveItems(Expression<Func<ShoppingListItemEntity, bool>> predicate)
+        {
+            var itemsToDelete = (await FindItems(predicate)).ToList();
+            var itemsToArchive = itemsToDelete.Select(o => o.CreateArchiveItem()).ToList();
+            Ostoslista.RemoveRange(itemsToDelete);
+            await Arkisto.AddRangeAsync(itemsToArchive);
+            await SaveChangesAsync();
+            return itemsToDelete;
         }
 
         public async Task<IEnumerable<ShoppingListItemEntity>> DeleteItems(Expression<Func<ShoppingListItemEntity, bool>> predicate)

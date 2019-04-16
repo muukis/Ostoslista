@@ -50,5 +50,14 @@ namespace OstoslistaData
         {
             return string.Equals(item.Email, email, StringComparison.InvariantCultureIgnoreCase);
         }
+
+        public static ArchivedShoppingListItemEntity CreateArchiveItem(this ShoppingListItemEntity item)
+        {
+            return new ArchivedShoppingListItemEntity
+            {
+                Title = item.Title,
+                ShopperId = item.ShopperId
+            };
+        }
     }
 }

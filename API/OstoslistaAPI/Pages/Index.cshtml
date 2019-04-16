@@ -95,6 +95,7 @@
             {
         <text>
         <div class="buyCheckedItems"><input type="button" value="Maksa valitut tuotteet" onclick="buyCheckedItems();" class="buttons" /></div>
+        <div class="deleteCheckedItems"><input type="button" value="Poista valitut tuotteet" onclick="deleteCheckedItems();" class="buttonsRed" /></div>
         </text>
             }
         }
@@ -267,7 +268,20 @@
         $.blockUI({ message: $('#waitIndContainer') });
         $.ajax({
             type: 'DELETE',
-            url: "/api/ShoppingList/@Model.UrlEncodedShopperName/unpending",
+            url: "/api/ShoppingList/@Model.UrlEncodedShopperName/unpending/archive",
+            dataType: 'json',
+            success: checkConnectionState,
+            error: function (e) {
+                console.log("ERROR: " + e.toString());
+            }
+        });
+    }
+
+    function deleteCheckedItems() {
+        $.blockUI({ message: $('#waitIndContainer') });
+        $.ajax({
+            type: 'DELETE',
+            url: "/api/ShoppingList/@Model.UrlEncodedShopperName/unpending/delete",
             dataType: 'json',
             success: checkConnectionState,
             error: function (e) {

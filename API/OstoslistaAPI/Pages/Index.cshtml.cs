@@ -42,6 +42,21 @@ namespace OstoslistaAPI.Pages
                 Shopper = await _shoppingListService.GetShopper(ShopperName);
             }
 
+            if (Shopper == null && User.Identity.IsAuthenticated)
+            {
+                var myShoppers = (await _shoppingListService.GetMyShoppers(User.GetUserEmailIdentifier()))?.ToList();
+
+                if (myShoppers?.Count == 1)
+                {
+                    Shopper = myShoppers.Single();
+                    ShopperName = Shopper.Name;
+                }
+                else if (myShoppers?.Count > 1)
+                {
+                    return Redirect("/MyShoppers");
+                }
+            }
+
             return Page();
         }
 
