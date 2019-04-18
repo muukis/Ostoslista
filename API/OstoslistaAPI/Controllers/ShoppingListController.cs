@@ -81,6 +81,59 @@ namespace OstoslistaAPI.Controllers
         }
 
         /// <summary>
+        /// Get all archived shopping list items
+        /// </summary>
+        /// <param name="shopperName">Shopper name</param>
+        /// <param name="lastCount">How many last archived items</param>
+        /// <returns>Array of <see cref="ArchivedShoppingListItemResult"/> objects</returns>
+        /// <response code="200">Array of shopping list items</response>
+        /// <response code="400">Invalid request</response>
+        /// <response code="401">Unauthorized request</response>
+        /// <response code="500">Internal server error</response>
+        [HttpGet]
+        [Route("{shopperName}/archived/{lastCount}")]
+        [ProducesResponseType(typeof(ArchivedShoppingListItemResult[]), 200)]
+        [ProducesResponseType(typeof(ErrorResult), 400)]
+        [ProducesResponseType(typeof(ErrorResult), 401)]
+        [ProducesResponseType(typeof(ErrorResult), 500)]
+        public async Task<IActionResult> GetAllArchivedShoppingListItems([FromRoute] string shopperName, [FromRoute] int lastCount = 0)
+        {
+            try
+            {
+                var shopper = await _service.GetShopper(shopperName);
+
+                if (!shopper.BypassAuthentication() && !User.GetShopperReadAuthorization(shopper))
+                {
+                    return Error(new ErrorResult
+                    {
+                        Code = HttpStatusCode.Unauthorized,
+                        Classification = ErrorClassification.AuthorizationError,
+                        Message = "Unauthorized request"
+                    });
+                }
+
+                var items = shopper.ArchivedItems.ToResults();
+                var results = items.OrderBy(o => o.Archived).ThenBy(o => o.Title.ToUpper()).ToList();
+
+                if (lastCount > 0)
+                {
+                    results = results.TakeLast(lastCount).ToList();
+                }
+
+                return Ok(results);
+            }
+            catch (Exception)
+            {
+                return Error(new ErrorResult
+                {
+                    Code = HttpStatusCode.InternalServerError,
+                    Classification = ErrorClassification.InternalError,
+                    Message = "Failed getting archived shopping list items"
+                });
+            }
+        }
+
+        /// <summary>
         /// Get similar shopping list items
         /// </summary>
         /// <returns>All the shoppers the user is involved in</returns>

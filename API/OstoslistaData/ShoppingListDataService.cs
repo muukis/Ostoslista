@@ -154,6 +154,7 @@ namespace OstoslistaData
             shopper.FriendReadAccess = shopperSettings.FriendReadAccess ?? shopper.FriendReadAccess;
             shopper.FriendWriteAccess = shopperSettings.FriendWriteAccess ?? shopper.FriendWriteAccess;
             shopper.ShowAdditionalButtons = shopperSettings.ShowAdditionalButtons ?? shopper.ShowAdditionalButtons;
+            shopper.ShowArchivedItems = shopperSettings.ShowArchivedItems ?? shopper.ShowArchivedItems;
             shopper.ApiAuthorizationBypassPassword = shopperSettings.ApiAuthorizationBypassPassword ?? shopper.ApiAuthorizationBypassPassword;
             shopper.Modified = DateTime.Now;
             await SaveChangesAsync();

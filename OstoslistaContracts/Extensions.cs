@@ -23,6 +23,22 @@ namespace OstoslistaContracts
             };
         }
 
+        public static IEnumerable<ArchivedShoppingListItemResult> ToResults(this IEnumerable<ArchivedShoppingListItemEntity> items)
+        {
+            return items.Select(o => o.ToResult());
+        }
+
+        public static ArchivedShoppingListItemResult ToResult(this ArchivedShoppingListItemEntity item)
+        {
+            return new ArchivedShoppingListItemResult
+            {
+                Id = item.Id ?? Guid.Empty,
+                Title = item.Title,
+                ShopperName = item.Shopper.Name,
+                Archived = item.Archived ?? DateTime.MinValue
+            };
+        }
+
         public static ShopperSettings ToDataObject(this SetShopperSettingsDto settings, Guid? shopperId)
         {
             return new ShopperSettings
@@ -34,6 +50,7 @@ namespace OstoslistaContracts
                 FriendReadAccess = settings.FriendReadAccess,
                 FriendWriteAccess = settings.FriendWriteAccess,
                 ShowAdditionalButtons = settings.ShowAdditionalButtons,
+                ShowArchivedItems = settings.ShowArchivedItems,
                 ApiAuthorizationBypassPassword = settings.ApiAuthorizationBypassPassword
             };
         }
@@ -48,6 +65,7 @@ namespace OstoslistaContracts
                 FriendReadAccess = shopper.FriendReadAccess ?? false,
                 FriendWriteAccess = shopper.FriendWriteAccess ?? false,
                 ShowAdditionalButtons = shopper.ShowAdditionalButtons ?? true,
+                ShowArchivedItems = shopper.ShowArchivedItems ?? true,
                 ApiAuthorizationBypassPassword = shopper.ApiAuthorizationBypassPassword
             };
         }
