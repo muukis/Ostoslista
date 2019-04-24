@@ -136,7 +136,7 @@
         vanhatOstokset.html("");
 
         for (var i = 0; data && i < data.length; i++) {
-            console.log("DATAA: " + data[i]);
+            addArchivedItemToList(data[i]);
         };
     }
 
@@ -247,6 +247,54 @@
             }
         }
         row.hide().appendTo("#ostoslista").fadeIn(1000);
+    }
+
+    function createArchivedItemElement(timestamp, title, itemId) {
+        var row = $('<div class="archivedShoppingList-item-row"></div>');
+        row.prop("title", title);
+        var cell1 = $('<div class="archivedShoppingList-item-cell"></div>').text(timestamp);
+        row.append(cell1);
+        var cell2 = $('<div class="archivedShoppingList-item-cell"></div>');
+        cell2.append($('<span style="margin-left: 10px"></span>').text(title));
+        cell2.append($('<input type="hidden" name="vanhaTuoteId"/>').val(itemId));
+        row.append(cell2);
+        var cell3 = $('<div class="archivedShoppingList-item-cell"></div>');
+        cell3.append($('<i class="far fa-trash-alt" style="margin-left: 10px; cursor: pointer;" title="Poista tämä rivi">'));
+        row.append(cell3);
+        return row;
+    }
+
+    function addArchivedItemToList(data) {
+        var archived = new Date(data.Archived);
+        var days = archived.getDate();
+        var months = archived.getMonth();
+        var years = archived.getFullYear();
+        var hours = archived.getHours();
+        var minutes = archived.getMinutes();
+
+        if (@Html.Raw("days < 10")) {
+            days = '0' + days;
+        }
+
+        if (@Html.Raw("months < 10")) {
+            months = '0' + months;
+        }
+
+        if (@Html.Raw("years < 10")) {
+            years = '0' + years;
+        }
+
+        if (@Html.Raw("hours < 10")) {
+            hours = '0' + hours;
+        }
+
+        if (@Html.Raw("minutes < 10")) {
+            minutes = '0' + minutes;
+        }
+        var timestamp = days + '.' + months + '.' + years + ' ' + hours + ':' + minutes;
+        var row = createArchivedItemElement(timestamp, data.Title, data.Id);
+
+        row.hide().prependTo("#vanhatOstokset").fadeIn(1000);
     }
     </text>
         }

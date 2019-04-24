@@ -91,7 +91,7 @@ namespace OstoslistaAPI.Controllers
         /// <response code="401">Unauthorized request</response>
         /// <response code="500">Internal server error</response>
         [HttpGet]
-        [Route("{shopperName}/archived/{lastCount}")]
+        [Route("{shopperName}/archived/{lastCount?}")]
         [ProducesResponseType(typeof(ArchivedShoppingListItemResult[]), 200)]
         [ProducesResponseType(typeof(ErrorResult), 400)]
         [ProducesResponseType(typeof(ErrorResult), 401)]
