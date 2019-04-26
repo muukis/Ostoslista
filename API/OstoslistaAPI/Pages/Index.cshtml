@@ -98,6 +98,14 @@
         <div class="deleteCheckedItems"><input type="button" value="Poista valitut tuotteet" onclick="deleteCheckedItems();" class="buttonsRed" /></div>
         </text>
             }
+        
+            if (Model.Shopper?.ShowArchivedItems ?? false)
+            {
+        <text>
+        <h5 class="spaceAboveArchivedItems">Ostetut tuotteet: <i class="far fa-trash-alt" style="cursor: pointer;" title="Poista ostetut tuotteet" onclick="requestDeleteArchivedItems();"></i></h5>    
+        <div class="shoppingListArchivedItems" id="vanhatOstokset">Ladataan...</div>
+        </text>
+            }
         }
     </div>
 </div>
@@ -118,8 +126,17 @@
         var ostoslista = $("#ostoslista");
         ostoslista.html("");
 
-        for (var i = 0; data && i < data.length; i++) {
+        @Html.Raw(@"for (var i = 0; data && i < data.length; i++) {
             addItemToList(data[i]);
+        };");
+    }
+
+    function loadArchivedShoppingListDataSuccess(data) {
+        var vanhatOstokset = $("#vanhatOstokset");
+        vanhatOstokset.html("");
+
+        for (var i = 0; data && i < data.length; i++) {
+            addArchivedItemToList(data[i]);
         };
     }
 
@@ -134,9 +151,9 @@
         }
     }
 
-    function findRow(itemId) {
+    function findRow(itemId, inputName = 'tuoteId', parents = 'div.shoppingList-item-row') {
         var elem = $("#ostolistaTuotteet");
-        return elem.find('input[name="tuoteId"][value="' + itemId + '"]').parents('div.shoppingList-item-row');
+        return elem.find('input[name="' + inputName + '"][value="' + itemId + '"]').parents(parents);
     }
 
     function getTempItemRow(title) {
@@ -231,7 +248,95 @@
         }
         row.hide().appendTo("#ostoslista").fadeIn(1000);
     }
-    </text>
+
+    function createArchivedItemElement(timestamp, title, itemId) {
+        var row = $('<div class="archivedShoppingList-item-row"></div>');
+        row.prop("title", title);
+        var cell1 = $('<div class="archivedShoppingList-item-cell"></div>').text(timestamp);
+        row.append(cell1);
+        var cell2 = $('<div class="archivedShoppingList-item-cell"></div>');
+        cell2.append($('<span style="margin-left: 10px"></span>').text(title));
+        cell2.append($('<input type="hidden" name="vanhaTuoteId"/>').val(itemId));
+        row.append(cell2);
+        @{
+            if (Model.UserIsWriteAuthenticated)
+            {
+        <text>
+        var cell3 = $('<div class="archivedShoppingList-item-cell"></div>');
+        var deleteArchivedCell = $('<span style="margin-left: 10px"></span>');
+        var deleteArchivedItem = $('<i class="far fa-trash-alt" style="margin-left: 10px; cursor: pointer;" title="Poista tämä rivi">');
+        deleteArchivedItem.click(function() {
+            requestDeleteArchivedItem(itemId);
+        });
+        deleteArchivedCell.append(deleteArchivedItem);
+        cell3.append(deleteArchivedCell);
+        row.append(cell3);
+        </text>
+            }
+        }
+        return row;
+    }
+
+    function requestDeleteArchivedItem(itemId) {
+        $.blockUI({ message: $('#waitIndContainer') });
+        $.ajax({
+            type: 'DELETE',
+            url: "/api/ShoppingList/" + encodeURIComponent(itemId) + "/deletearchive",
+            dataType: 'json',
+            success: checkConnectionState,
+            error: function (e) {
+                console.log("ERROR: " + e.toString());
+            }
+        });
+    }
+
+    function requestDeleteArchivedItems() {
+        $.blockUI({ message: $('#waitIndContainer') });
+        $.ajax({
+            type: 'DELETE',
+            url: "/api/ShoppingList/@Model.UrlEncodedShopperName/deletearchive/all",
+            dataType: 'json',
+            success: checkConnectionState,
+            error: function (e) {
+                console.log("ERROR: " + e.toString());
+            }
+        });
+    }
+
+    function getTimeStamp(datetime) {
+        var archived = new Date(datetime);
+        var days = archived.getDate();
+        var months = archived.getMonth();
+        var years = archived.getFullYear();
+        var hours = archived.getHours();
+        var minutes = archived.getMinutes();
+
+        if (@Html.Raw("days < 10")) {
+            days = '0' + days;
+        }
+
+        if (@Html.Raw("months < 10")) {
+            months = '0' + months;
+        }
+
+        if (@Html.Raw("hours < 10")) {
+            hours = '0' + hours;
+        }
+
+        if (@Html.Raw("minutes < 10")) {
+            minutes = '0' + minutes;
+        }
+
+        return days + '.' + months + '.' + years + ' ' + hours + ':' + minutes;
+    }
+
+    function addArchivedItemToList(data) {
+        var timestamp = getTimeStamp(data.Archived);
+        var row = createArchivedItemElement(timestamp, data.Title, data.Id);
+
+        row.hide().prependTo("#vanhatOstokset").fadeIn(1000);
+    }
+                </text>
         }
     }
 
@@ -267,7 +372,7 @@
     function buyCheckedItems() {
         $.blockUI({ message: $('#waitIndContainer') });
         $.ajax({
-            type: 'DELETE',
+            type: 'PUT',
             url: "/api/ShoppingList/@Model.UrlEncodedShopperName/unpending/archive",
             dataType: 'json',
             success: checkConnectionState,
@@ -464,6 +569,24 @@
     }
 
     @{
+        if (Model.Shopper?.ShowArchivedItems ?? false)
+        {
+    <text>
+    function loadArchivedShoppingListData() {
+        $.ajax({
+            type: 'GET',
+            url: "/api/ShoppingList/@Model.UrlEncodedShopperName/archived",
+            dataType: 'json',
+            success: loadArchivedShoppingListDataSuccess,
+            error: function(e) {
+                console.log("ERROR: " + e.toString());
+                loadArchivedShoppingListDataSuccess();
+            }
+        });
+    }
+
+    </text>
+        }
         if (Model.Shopper?.AllowNewFriendRequests ?? false)
         {
     <text>
@@ -511,12 +634,12 @@
             if (!Model.UserIsReadAuthenticated)
             {
         <text>
-        elem.html("");
+            elem.html("");
         </text>
                 if (Model.UserIsShopperFriend)
                 {
         <text>
-        elem.append($('<h2 class="spaceAbove">Tässä ostoslistassa ei ole vielä lukuoikeuksia asetettuna!</h2>'));
+            elem.append($('<h2 class="spaceAbove">Tässä ostoslistassa ei ole vielä lukuoikeuksia asetettuna!</h2>'));
         </text>
                 }
                 else if (Model.Shopper?.AllowNewFriendRequests ?? false)
@@ -524,43 +647,43 @@
                     if (Model.UserIsShopperFriendRequested)
                     {
         <text>
-        elem.append($('<h2 class="spaceAbove">Ostoslistan kaveripyyntöäsi ei ole vielä hyväksytty!</h2>'));
-        row = $("<div></div>");
-        row.append($('<input type="button" value="Poista kaveripyyntö" class="buttons" />').click(removeShopperFriendRequest));
-        elem.append(row);
+            elem.append($('<h2 class="spaceAbove">Ostoslistan kaveripyyntöäsi ei ole vielä hyväksytty!</h2>'));
+            row = $("<div></div>");
+            row.append($('<input type="button" value="Poista kaveripyyntö" class="buttons" />').click(removeShopperFriendRequest));
+            elem.append(row);
         </text>
                     }
                     else
                     {
         <text>
-        elem.append($('<h2 class="spaceAbove">Tämä ostoslista hyväksyy kavereita!</h2>'));
+            elem.append($('<h2 class="spaceAbove">Tämä ostoslista hyväksyy kavereita!</h2>'));
         </text>
                         if (User.Identity.IsAuthenticated)
                         {
         <text>
-        row = $("<div></div>");
-        row.append($('<input type="button" value="Lähetä kaveripyyntö" class="buttons" />').click(createShopperFriendRequest));
-        elem.append(row);
+            row = $("<div></div>");
+            row.append($('<input type="button" value="Lähetä kaveripyyntö" class="buttons" />').click(createShopperFriendRequest));
+            elem.append(row);
         </text>
                         }
                         else
                         {
         <text>
-        row = $("<div></div>");
-        row.append($('<a href="/Login" target="_self" title="Kirjaudu sisään Google tunnuksillasi" class="text-dark"><i class="fas fa-sign-in-alt"></i> Kirjaudu tästä ensin sisään</a>'));
-        elem.append(row);
+            row = $("<div></div>");
+            row.append($('<a href="/Login" target="_self" title="Kirjaudu sisään Google tunnuksillasi" class="text-dark"><i class="fas fa-sign-in-alt"></i> Kirjaudu tästä ensin sisään</a>'));
+            elem.append(row);
         </text>
                         }
                     }
                 }
         <text>
-        elem.append($('<h3 class="spaceAbove">Käytä ostoskassi tunnustasi!</h3>'));
-        row = $("<div></div>");
-        row.append($('<input type="text" id="ostoskassinTunnus" size="10" placeholder="Syötä ostoslistan tunnus..." onkeypress="return keyPress(event, openShoppingList);" class="newItem"/>'));
-        row.append("&nbsp;");
-        row.append($('<input type="button" value="Avaa" onclick="openShoppingList();" class="buttons" />'));
-        elem.append(row);
-        elem.show();
+            elem.append($('<h3 class="spaceAbove">Käytä ostoskassi tunnustasi!</h3>'));
+            row = $("<div></div>");
+            row.append($('<input type="text" id="ostoskassinTunnus" size="10" placeholder="Syötä ostoslistan tunnus..." onkeypress="return keyPress(event, openShoppingList);" class="newItem"/>'));
+            row.append("&nbsp;");
+            row.append($('<input type="button" value="Avaa" onclick="openShoppingList();" class="buttons" />'));
+            elem.append(row);
+            elem.show();
         </text>
             }
             else
@@ -570,10 +693,10 @@
                     if (!Model.User.Identity.IsAuthenticated)
                     {
         <text>
-        elem.append($('<h3 class="spaceAbove">Tämä ostoslista hyväksyy kavereita!</h3>'));
-        row = $("<div></div>");
-        row.append($('<a href="/Login" target="_self" title="Kirjaudu sisään Google tunnuksillasi" class="text-dark"><i class="fas fa-sign-in-alt"></i> Kirjaudu tästä ensin sisään</a>'));
-        elem.append(row);
+            elem.append($('<h3 class="spaceAbove">Tämä ostoslista hyväksyy kavereita!</h3>'));
+            row = $("<div></div>");
+            row.append($('<a href="/Login" target="_self" title="Kirjaudu sisään Google tunnuksillasi" class="text-dark"><i class="fas fa-sign-in-alt"></i> Kirjaudu tästä ensin sisään</a>'));
+            elem.append(row);
         </text>
                     }
                     else
@@ -581,65 +704,89 @@
                         if (!Model.UserIsOwnerAuthenticated && !Model.UserIsShopperFriend && !Model.UserIsShopperFriendRequested)
                         {
         <text>
-        elem.append($('<h3 class="spaceAbove">Tämä ostoslista hyväksyy kavereita!</h3>'));
-        row = $("<div></div>");
-        row.append($('<input type="button" value="Lähetä kaveripyyntö" class="buttons" />').click(createShopperFriendRequest));
-        elem.append(row);
+            elem.append($('<h3 class="spaceAbove">Tämä ostoslista hyväksyy kavereita!</h3>'));
+            row = $("<div></div>");
+            row.append($('<input type="button" value="Lähetä kaveripyyntö" class="buttons" />').click(createShopperFriendRequest));
+            elem.append(row);
         </text>
                         }
                         else if (Model.UserIsShopperFriendRequested)
                         {
         <text>
-        elem.append($('<h3 class="spaceAbove">Ostoslistan kaveripyyntöäsi ei ole vielä hyväksytty!</h3>'));
-        row = $("<div></div>");
-        row.append($('<input type="button" value="Poista kaveripyyntö" class="buttons" />').click(removeShopperFriendRequest));
-        elem.append(row);
+            elem.append($('<h3 class="spaceAbove">Ostoslistan kaveripyyntöäsi ei ole vielä hyväksytty!</h3>'));
+            row = $("<div></div>");
+            row.append($('<input type="button" value="Poista kaveripyyntö" class="buttons" />').click(removeShopperFriendRequest));
+            elem.append(row);
         </text>
                         }
                     }
                 }
         <text>
-        loadShoppingListData();
+            loadShoppingListData();
+            @{
+                if (Model.Shopper?.ShowArchivedItems ?? false)
+                {
+        <text>
+            loadArchivedShoppingListData();
+        </text>
+                }
+            }
 
-        connection.on("NewItemCreated", function(itemId, title, isPending) {
-            row = findRow(itemId);
+            connection.on("NewItemCreated", function(itemId, title, isPending) {
+                row = findRow(itemId);
 
-            if (row.length !== 1) {
-                var iconElem = createDefaultCheckBoxElement(isPending);
-                row = createItemRow(iconElem, title, itemId, true);
-                @{
+                if (row.length !== 1) {
+                    var iconElem = createDefaultCheckBoxElement(isPending);
+                    row = createItemRow(iconElem, title, itemId, true);
+                    @{
                     if (Model.UserIsWriteAuthenticated)
                     {
                         @:row.click(togglePending);
                     }
-                } 
-                row.hide().appendTo("#ostoslista").fadeIn(1000);
-            }
-        });
-        connection.on("ItemPendingChanged", function(itemId, isPending) {
-            row = findRow(itemId);
+                    } 
+                    row.hide().appendTo("#ostoslista").fadeIn(1000);
+                }
+            });
+            connection.on("ItemPendingChanged", function(itemId, isPending) {
+                row = findRow(itemId);
 
-            if (row.length === 1) {
-                setItemRowPending(row, isPending);
-                @{
+                if (row.length === 1) {
+                    setItemRowPending(row, isPending);
+                    @{
                     if (Model.UserIsWriteAuthenticated)
                     {
                         @:row.click(togglePending);
                     }
-                } 
-            }
-        });
-        connection.on("RemoveItem", function(itemId) {
-            row = findRow(itemId);
+                    } 
+                }
+            });
+            connection.on("RemoveItem", function(itemId) {
+                row = findRow(itemId);
 
-            if (row.length === 1) {
-                row.fadeOut(1000, function() { $(this).remove(); });
-            }
-        });
-        connection.onclose(function() {
+                if (row.length === 1) {
+                    row.fadeOut(1000, function() { $(this).remove(); });
+                }
+            });
+            connection.on("NewArchivedItemCreated", function(itemId, title, archived) {
+                row = findRow(itemId, 'vanhaTuoteId', 'div.archivedShoppingList-item-row');
+
+                if (row.length !== 1) {
+                    var timestamp = getTimeStamp(archived);
+                    row = createArchivedItemElement(timestamp, title, itemId);
+                    row.hide().prependTo("#vanhatOstokset").fadeIn(1000);
+                }
+            });
+            connection.on("RemoveArchivedItem", function(itemId) {
+                row = findRow(itemId, 'vanhaTuoteId', 'div.archivedShoppingList-item-row');
+
+                if (row.length === 1) {
+                    row.fadeOut(1000, function() { $(this).remove(); });
+                }
+            });
+            connection.onclose(function() {
+                reconnectToHub();
+            });
             reconnectToHub();
-        });
-        reconnectToHub();
         </text>
                     }
         }

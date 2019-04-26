@@ -76,6 +76,13 @@
             padding-top: 15px;
         }
 
+        .shoppingListArchivedItems {
+            font-size: 8pt;
+            text-align: left;
+            display: table;
+            margin: auto;
+        }
+
         .about {
             font-size: 12pt;
             text-align: left;
@@ -99,6 +106,18 @@
         }
 
         .shoppingList-item-cell {
+            overflow: hidden;
+            /*white-space: nowrap;*/
+            display: table-cell;
+        }
+
+        .archivedShoppingList-item-row {
+            overflow: hidden;
+            /*white-space: nowrap;*/
+            display: table-row;
+        }
+
+        .archivedShoppingList-item-cell {
             overflow: hidden;
             /*white-space: nowrap;*/
             display: table-cell;
@@ -164,6 +183,10 @@
 
         .spaceBelow {
             margin-bottom: 20px;
+        }
+
+        .spaceAboveArchivedItems {
+            margin-top: 60px;
         }
 
         a:hover {
