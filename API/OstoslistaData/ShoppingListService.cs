@@ -29,6 +29,11 @@ namespace OstoslistaData
             return await _dataService.FindItems(predicate);
         }
 
+        public async Task<IEnumerable<ArchivedShoppingListItemEntity>> FindArchivedItems(Expression<Func<ArchivedShoppingListItemEntity, bool>> predicate)
+        {
+            return await _dataService.FindArchivedItems(predicate);
+        }
+
         public async Task<ShoppingListItemEntity> CreateItem(string shopperName, string title)
         {
             return await _dataService.CreateItem(shopperName, title);
@@ -39,7 +44,7 @@ namespace OstoslistaData
             return await _dataService.UpdateItemPendingStatus(id, isPending);
         }
 
-        public async Task<IEnumerable<ShoppingListItemEntity>> ArchiveItems(Expression<Func<ShoppingListItemEntity, bool>> predicate)
+        public async Task<IEnumerable<Tuple<ShoppingListItemEntity, ArchivedShoppingListItemEntity>>> ArchiveItems(Expression<Func<ShoppingListItemEntity, bool>> predicate)
         {
             return await _dataService.ArchiveItems(predicate);
         }
@@ -47,6 +52,11 @@ namespace OstoslistaData
         public async Task<IEnumerable<ShoppingListItemEntity>> DeleteItems(Expression<Func<ShoppingListItemEntity, bool>> predicate)
         {
             return await _dataService.DeleteItems(predicate);
+        }
+
+        public async Task<IEnumerable<ArchivedShoppingListItemEntity>> DeleteArchivedItems(Expression<Func<ArchivedShoppingListItemEntity, bool>> predicate)
+        {
+            return await _dataService.DeleteArchivedItems(predicate);
         }
 
         public async Task<ShopperEntity> SaveShopperSettings(ShopperSettings shopperSettings)

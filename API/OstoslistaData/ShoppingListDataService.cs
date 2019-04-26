@@ -81,6 +81,11 @@ namespace OstoslistaData
             return await Ostoslista.Include(o => o.Shopper).Where(predicate).ToListAsync();
         }
 
+        public async Task<IEnumerable<ArchivedShoppingListItemEntity>> FindArchivedItems(Expression<Func<ArchivedShoppingListItemEntity, bool>> predicate)
+        {
+            return await Arkisto.Include(o => o.Shopper).Where(predicate).ToListAsync();
+        }
+
         public async Task<ShoppingListItemEntity> CreateItem(string shopperName, string title)
         {
             var shopper = await GetShopper(shopperName);
@@ -121,20 +126,28 @@ namespace OstoslistaData
             return shoppingListItem;
         }
 
-        public async Task<IEnumerable<ShoppingListItemEntity>> ArchiveItems(Expression<Func<ShoppingListItemEntity, bool>> predicate)
+        public async Task<IEnumerable<Tuple<ShoppingListItemEntity,  ArchivedShoppingListItemEntity>>> ArchiveItems(Expression<Func<ShoppingListItemEntity, bool>> predicate)
         {
             var itemsToDelete = (await FindItems(predicate)).ToList();
-            var itemsToArchive = itemsToDelete.Select(o => o.CreateArchiveItem()).ToList();
+            var items = itemsToDelete.Select(o => new Tuple<ShoppingListItemEntity, ArchivedShoppingListItemEntity>(o, o.CreateArchiveItem())).ToList();
             Ostoslista.RemoveRange(itemsToDelete);
-            await Arkisto.AddRangeAsync(itemsToArchive);
+            await Arkisto.AddRangeAsync(items.Select(o => o.Item2));
             await SaveChangesAsync();
-            return itemsToDelete;
+            return items;
         }
 
         public async Task<IEnumerable<ShoppingListItemEntity>> DeleteItems(Expression<Func<ShoppingListItemEntity, bool>> predicate)
         {
             var itemsToDelete = (await FindItems(predicate)).ToList();
             Ostoslista.RemoveRange(itemsToDelete);
+            await SaveChangesAsync();
+            return itemsToDelete;
+        }
+
+        public async Task<IEnumerable<ArchivedShoppingListItemEntity>> DeleteArchivedItems(Expression<Func<ArchivedShoppingListItemEntity, bool>> predicate)
+        {
+            var itemsToDelete = (await FindArchivedItems(predicate)).ToList();
+            Arkisto.RemoveRange(itemsToDelete);
             await SaveChangesAsync();
             return itemsToDelete;
         }

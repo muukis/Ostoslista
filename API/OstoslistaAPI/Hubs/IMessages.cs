@@ -31,5 +31,19 @@ namespace OstoslistaAPI.Hubs
         /// <param name="itemId"></param>
         /// <returns></returns>
         Task RemoveItem(Guid itemId);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="itemId"></param>
+        /// <param name="title"></param>
+        /// <param name="archived"></param>
+        /// <returns></returns>
+        Task NewArchivedItemCreated(Guid itemId, string title, DateTime archived);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="itemId"></param>
+        /// <returns></returns>
+        Task RemoveArchivedItem(Guid itemId);
     }
 }

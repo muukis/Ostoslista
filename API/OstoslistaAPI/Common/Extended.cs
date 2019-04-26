@@ -33,6 +33,7 @@ namespace OstoslistaAPI.Common
         /// Get authenticated user image URL
         /// </summary>
         /// <param name="user"></param>
+        /// <param name="size"></param>
         /// <returns></returns>
         public static string GetUserImageUrl(this ClaimsPrincipal user, int size = 20)
         {

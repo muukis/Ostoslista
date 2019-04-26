@@ -2,7 +2,7 @@
 
 namespace OstoslistaData
 {
-    public class ArchivedShoppingListItemEntity : IHubItemRemove
+    public class ArchivedShoppingListItemEntity : IHubArchivedItem
     {
         public Guid? Id { get; set; }
         public string Title { get; set; }

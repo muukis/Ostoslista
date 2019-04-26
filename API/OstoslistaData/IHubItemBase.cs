@@ -2,7 +2,7 @@
 
 namespace OstoslistaData
 {
-    public interface IHubItemRemove
+    public interface IHubItemBase
     {
         Guid? Id { get; set; }
         ShopperEntity Shopper { get; set; }

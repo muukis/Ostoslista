@@ -102,7 +102,7 @@
             if (Model.Shopper?.ShowArchivedItems ?? false)
             {
         <text>
-        <h5 class="spaceAboveArchivedItems">Ostetut tuotteet:</h5>    
+        <h5 class="spaceAboveArchivedItems">Ostetut tuotteet: <i class="far fa-trash-alt" style="cursor: pointer;" title="Poista ostetut tuotteet" onclick="requestDeleteArchivedItems();"></i></h5>    
         <div class="shoppingListArchivedItems" id="vanhatOstokset">Ladataan...</div>
         </text>
             }
@@ -126,9 +126,9 @@
         var ostoslista = $("#ostoslista");
         ostoslista.html("");
 
-        for (var i = 0; data && i < data.length; i++) {
+        @Html.Raw(@"for (var i = 0; data && i < data.length; i++) {
             addItemToList(data[i]);
-        };
+        };");
     }
 
     function loadArchivedShoppingListDataSuccess(data) {
@@ -151,9 +151,9 @@
         }
     }
 
-    function findRow(itemId) {
+    function findRow(itemId, inputName = 'tuoteId', parents = 'div.shoppingList-item-row') {
         var elem = $("#ostolistaTuotteet");
-        return elem.find('input[name="tuoteId"][value="' + itemId + '"]').parents('div.shoppingList-item-row');
+        return elem.find('input[name="' + inputName + '"][value="' + itemId + '"]').parents(parents);
     }
 
     function getTempItemRow(title) {
@@ -258,14 +258,53 @@
         cell2.append($('<span style="margin-left: 10px"></span>').text(title));
         cell2.append($('<input type="hidden" name="vanhaTuoteId"/>').val(itemId));
         row.append(cell2);
+        @{
+            if (Model.UserIsWriteAuthenticated)
+            {
+        <text>
         var cell3 = $('<div class="archivedShoppingList-item-cell"></div>');
-        cell3.append($('<i class="far fa-trash-alt" style="margin-left: 10px; cursor: pointer;" title="Poista tämä rivi">'));
+        var deleteArchivedCell = $('<span style="margin-left: 10px"></span>');
+        var deleteArchivedItem = $('<i class="far fa-trash-alt" style="margin-left: 10px; cursor: pointer;" title="Poista tämä rivi">');
+        deleteArchivedItem.click(function() {
+            requestDeleteArchivedItem(itemId);
+        });
+        deleteArchivedCell.append(deleteArchivedItem);
+        cell3.append(deleteArchivedCell);
         row.append(cell3);
+        </text>
+            }
+        }
         return row;
     }
 
-    function addArchivedItemToList(data) {
-        var archived = new Date(data.Archived);
+    function requestDeleteArchivedItem(itemId) {
+        $.blockUI({ message: $('#waitIndContainer') });
+        $.ajax({
+            type: 'DELETE',
+            url: "/api/ShoppingList/" + encodeURIComponent(itemId) + "/deletearchive",
+            dataType: 'json',
+            success: checkConnectionState,
+            error: function (e) {
+                console.log("ERROR: " + e.toString());
+            }
+        });
+    }
+
+    function requestDeleteArchivedItems() {
+        $.blockUI({ message: $('#waitIndContainer') });
+        $.ajax({
+            type: 'DELETE',
+            url: "/api/ShoppingList/@Model.UrlEncodedShopperName/deletearchive/all",
+            dataType: 'json',
+            success: checkConnectionState,
+            error: function (e) {
+                console.log("ERROR: " + e.toString());
+            }
+        });
+    }
+
+    function getTimeStamp(datetime) {
+        var archived = new Date(datetime);
         var days = archived.getDate();
         var months = archived.getMonth();
         var years = archived.getFullYear();
@@ -287,12 +326,17 @@
         if (@Html.Raw("minutes < 10")) {
             minutes = '0' + minutes;
         }
-        var timestamp = days + '.' + months + '.' + years + ' ' + hours + ':' + minutes;
+
+        return days + '.' + months + '.' + years + ' ' + hours + ':' + minutes;
+    }
+
+    function addArchivedItemToList(data) {
+        var timestamp = getTimeStamp(data.Archived);
         var row = createArchivedItemElement(timestamp, data.Title, data.Id);
 
         row.hide().prependTo("#vanhatOstokset").fadeIn(1000);
     }
-    </text>
+                </text>
         }
     }
 
@@ -328,7 +372,7 @@
     function buyCheckedItems() {
         $.blockUI({ message: $('#waitIndContainer') });
         $.ajax({
-            type: 'DELETE',
+            type: 'PUT',
             url: "/api/ShoppingList/@Model.UrlEncodedShopperName/unpending/archive",
             dataType: 'json',
             success: checkConnectionState,
@@ -699,7 +743,7 @@
                     {
                         @:row.click(togglePending);
                     }
-                } 
+                    } 
                     row.hide().appendTo("#ostoslista").fadeIn(1000);
                 }
             });
@@ -713,11 +757,27 @@
                     {
                         @:row.click(togglePending);
                     }
-                } 
+                    } 
                 }
             });
             connection.on("RemoveItem", function(itemId) {
                 row = findRow(itemId);
+
+                if (row.length === 1) {
+                    row.fadeOut(1000, function() { $(this).remove(); });
+                }
+            });
+            connection.on("NewArchivedItemCreated", function(itemId, title, archived) {
+                row = findRow(itemId, 'vanhaTuoteId', 'div.archivedShoppingList-item-row');
+
+                if (row.length !== 1) {
+                    var timestamp = getTimeStamp(archived);
+                    row = createArchivedItemElement(timestamp, title, itemId);
+                    row.hide().prependTo("#vanhatOstokset").fadeIn(1000);
+                }
+            });
+            connection.on("RemoveArchivedItem", function(itemId) {
+                row = findRow(itemId, 'vanhaTuoteId', 'div.archivedShoppingList-item-row');
 
                 if (row.length === 1) {
                     row.fadeOut(1000, function() { $(this).remove(); });

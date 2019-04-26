@@ -10,10 +10,12 @@ namespace OstoslistaData
         Task<ShopperEntity> GetShopper(string shopperName);
         Task<ShopperEntity> CreateShopper(string shopperName, string emailIdentifier);
         Task<IEnumerable<ShoppingListItemEntity>> FindItems(Expression<Func<ShoppingListItemEntity, bool>> predicate);
+        Task<IEnumerable<ArchivedShoppingListItemEntity>> FindArchivedItems(Expression<Func<ArchivedShoppingListItemEntity, bool>> predicate);
         Task<ShoppingListItemEntity> CreateItem(string shopperName, string title);
         Task<ShoppingListItemEntity> UpdateItemPendingStatus(Guid id, bool isPending);
-        Task<IEnumerable<ShoppingListItemEntity>> ArchiveItems(Expression<Func<ShoppingListItemEntity, bool>> predicate);
+        Task<IEnumerable<Tuple<ShoppingListItemEntity, ArchivedShoppingListItemEntity>>> ArchiveItems(Expression<Func<ShoppingListItemEntity, bool>> predicate);
         Task<IEnumerable<ShoppingListItemEntity>> DeleteItems(Expression<Func<ShoppingListItemEntity, bool>> predicate);
+        Task<IEnumerable<ArchivedShoppingListItemEntity>> DeleteArchivedItems(Expression<Func<ArchivedShoppingListItemEntity, bool>> predicate);
         Task<ShopperEntity> SaveShopperSettings(ShopperSettings shopperSettings);
         Task<ShopperFriendEntity> SetShopperFriendRequest(Guid shopperFriendRequestId, bool approve);
         Task<ShopperFriendEntity> DeleteShopperFriend(Guid shopperFriendId);
