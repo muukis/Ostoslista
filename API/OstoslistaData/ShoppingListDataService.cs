@@ -25,6 +25,8 @@ namespace OstoslistaData
             shopper.Property(o => o.FriendWriteAccess).IsRequired(false).ValueGeneratedOnAdd();
             shopper.Property(o => o.FriendReadAccess).IsRequired(false).ValueGeneratedOnAdd();
             shopper.Property(o => o.ShowAdditionalButtons).IsRequired(false).ValueGeneratedOnAdd();
+            shopper.Property(o => o.ArchiveDaysToShow).IsRequired(false).ValueGeneratedOnAdd();
+            shopper.Property(o => o.OnlyOwnerCanDeleteArchives).IsRequired(false).ValueGeneratedOnAdd();
             shopper.Property(o => o.ApiAuthorizationBypassPassword).IsRequired(false).HasMaxLength(1024);
             shopper.HasMany(o => o.Items).WithOne(o => o.Shopper);
             shopper.HasMany(o => o.Friends).WithOne(o => o.Shopper);
@@ -168,6 +170,8 @@ namespace OstoslistaData
             shopper.FriendWriteAccess = shopperSettings.FriendWriteAccess ?? shopper.FriendWriteAccess;
             shopper.ShowAdditionalButtons = shopperSettings.ShowAdditionalButtons ?? shopper.ShowAdditionalButtons;
             shopper.ShowArchivedItems = shopperSettings.ShowArchivedItems ?? shopper.ShowArchivedItems;
+            shopper.ArchiveDaysToShow = shopperSettings.ArchiveDaysToShow ?? shopper.ArchiveDaysToShow;
+            shopper.OnlyOwnerCanDeleteArchives = shopperSettings.OnlyOwnerCanDeleteArchives ?? shopper.OnlyOwnerCanDeleteArchives;
             shopper.ApiAuthorizationBypassPassword = shopperSettings.ApiAuthorizationBypassPassword ?? shopper.ApiAuthorizationBypassPassword;
             shopper.Modified = DateTime.Now;
             await SaveChangesAsync();

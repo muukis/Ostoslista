@@ -71,8 +71,10 @@
         listElem.append(createSettingsRow("FriendReadAccess", data.FriendReadAccess, "Kaverit voivat lukea ostoslistaa"));
         listElem.append(createSettingsRow("FriendWriteAccess", data.FriendWriteAccess, "Kaverit voivat lukea ja kirjoittaa ostoslistaan"));
         listElem.append($('<div class="spaceBelow"></div>'));
-        listElem.append(createSettingsRow("ShowAdditionalButtons", data.ShowAdditionalButtons, "Näytä ostoslistan lisänapit"));
         listElem.append(createSettingsRow("ShowArchivedItems", data.ShowArchivedItems, "Näytä viimeksi ostetut tuotteet"));
+        listElem.append(createSettingsRow("OnlyOwnerCanDeleteArchives", data.OnlyOwnerCanDeleteArchives, "Vain minä saan poistaa viimeksi ostettuja tuotteita"));
+        listElem.append($('<div class="spaceBelow"></div>'));
+        listElem.append(createSettingsRow("ShowAdditionalButtons", data.ShowAdditionalButtons, "Näytä ostoslistan lisänapit"));
 
         asetukset.append(listElem);
 

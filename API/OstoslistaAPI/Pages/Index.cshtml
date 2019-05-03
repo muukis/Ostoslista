@@ -85,11 +85,11 @@
             {
         <text>
         <div id="similaritiesDialog" title="Samankaltaisia tuotteita..." style="display: none;">
-            <div id="similaritiesHeader">Ostoskorista löytyy tuotteelle <span id="vertailuTuote">---</span><br/>samankaltaisia tuotteita:</div>
+            <div>Ostoskorista löytyy tuotteelle <span id="vertailuTuote">---</span><br />samankaltaisia tuotteita:</div>
             <div style="text-align: center;"><div id="samankaltaisetTuotteet"></div></div>
         </div>
         <div id="archivedSimilaritiesDialog" title="Vanhoja tuotteita..." style="display: none;">
-            <div id="similaritiesHeader">Ostit tuotetta <span id="vanhaVertailuTuote">---</span><br/>viimeksi:</div>
+            <div>Ostit viimeksi tuotetta<br /><span id="vanhaVertailuTuote">---</span>:</div>
             <div style="text-align: center;"><div id="samankaltaisetVanhatTuotteet"></div></div>
         </div>
         <div id="newShoppingListItem">
@@ -115,7 +115,7 @@
         <h5 class="spaceAboveArchivedItems">
             Ostetut tuotteet:    
         @{
-            if (Model.UserIsWriteAuthenticated)
+            if (Model.UserIsAllowedToDeleteArchives)
             {
         <text>
             <i class="far fa-trash-alt" style="cursor: pointer;" title="Poista ostetut tuotteet" onclick="requestDeleteArchivedItems();"></i>
@@ -280,7 +280,7 @@
         row.append(cell2);
         if (allowDelete) {
             @{
-            if (Model.UserIsWriteAuthenticated)
+            if (Model.UserIsAllowedToDeleteArchives)
             {
             <text>
             var cell3 = $('<div class="archivedShoppingList-item-cell"></div>');
@@ -467,7 +467,7 @@
     function addArchivedItemToSimilarityList(samankaltaisetTuotteetElem, data) {
         var timestamp = getTimeStamp(data.Archived);
         var row = createArchivedItemElement(timestamp, data.Title, data.Id, false);
-        samankaltaisetTuotteetElem.append(row);
+        samankaltaisetTuotteetElem.prepend(row);
     }
 
     function checkSimilarities() {
@@ -642,7 +642,7 @@
     function loadArchivedShoppingListData() {
         $.ajax({
             type: 'GET',
-            url: "/api/ShoppingList/@Model.UrlEncodedShopperName/archived",
+            url: "/api/ShoppingList/@Model.UrlEncodedShopperName/archived/@(Model.Shopper.ArchiveDaysToShow ?? 0)",
             dataType: 'json',
             success: loadArchivedShoppingListDataSuccess,
             error: function(e) {
@@ -768,23 +768,26 @@
                     }
                     else
                     {
-                        if (!Model.UserIsOwnerAuthenticated && !Model.UserIsShopperFriend && !Model.UserIsShopperFriendRequested)
+                        if (!Model.UserIsOwnerAuthenticated && !Model.UserIsShopperFriend)
                         {
+                            if (!Model.UserIsShopperFriendRequested)
+                            {
         <text>
             elem.append($('<h3 class="spaceAbove">Tämä ostoslista hyväksyy kavereita!</h3>'));
             row = $("<div></div>");
             row.append($('<input type="button" value="Lähetä kaveripyyntö" class="buttons" />').click(createShopperFriendRequest));
             elem.append(row);
         </text>
-                        }
-                        else if (Model.UserIsShopperFriendRequested)
-                        {
+                            }
+                            else
+                            {
         <text>
             elem.append($('<h3 class="spaceAbove">Ostoslistan kaveripyyntöäsi ei ole vielä hyväksytty!</h3>'));
             row = $("<div></div>");
             row.append($('<input type="button" value="Poista kaveripyyntö" class="buttons" />').click(removeShopperFriendRequest));
             elem.append(row);
         </text>
+                            }
                         }
                     }
                 }
@@ -810,7 +813,7 @@
                     {
                         @:row.click(togglePending);
                     }
-                    } 
+                    }
                     row.hide().appendTo("#ostoslista").fadeIn(1000);
                 }
             });
@@ -824,7 +827,7 @@
                     {
                         @:row.click(togglePending);
                     }
-                    } 
+                    }
                 }
             });
             connection.on("RemoveItem", function(itemId) {

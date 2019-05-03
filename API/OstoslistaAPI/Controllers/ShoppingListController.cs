@@ -558,7 +558,7 @@ namespace OstoslistaAPI.Controllers
             {
                 var item = (await _service.FindArchivedItems(o => o.Id == archivedShoppingListItemId)).Single();
 
-                if (!item.Shopper.BypassAuthentication() && !User.GetShopperWriteAuthorization(item.Shopper))
+                if (!item.Shopper.BypassAuthentication() && !User.GetShopperDeleteArchiveAuthorization(item.Shopper))
                 {
                     return Error(new ErrorResult
                     {
@@ -747,7 +747,7 @@ namespace OstoslistaAPI.Controllers
             {
                 var shopper = await _service.GetShopper(shopperName);
 
-                if (!shopper.BypassAuthentication() && !User.GetShopperWriteAuthorization(shopper))
+                if (!shopper.BypassAuthentication() && !User.GetShopperDeleteArchiveAuthorization(shopper))
                 {
                     return Error(new ErrorResult
                     {

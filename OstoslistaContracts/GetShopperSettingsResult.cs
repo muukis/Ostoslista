@@ -9,6 +9,8 @@
         public bool FriendReadAccess { get; set; }
         public bool ShowAdditionalButtons { get; set; }
         public bool ShowArchivedItems { get; set; }
+        public int ArchiveDaysToShow { get; set; }
+        public bool OnlyOwnerCanDeleteArchives { get; set; }
         public string ApiAuthorizationBypassPassword { get; set; }
     }
 }

@@ -51,6 +51,8 @@ namespace OstoslistaContracts
                 FriendWriteAccess = settings.FriendWriteAccess,
                 ShowAdditionalButtons = settings.ShowAdditionalButtons,
                 ShowArchivedItems = settings.ShowArchivedItems,
+                ArchiveDaysToShow = settings.ArchiveDaysToShow,
+                OnlyOwnerCanDeleteArchives = settings.OnlyOwnerCanDeleteArchives,
                 ApiAuthorizationBypassPassword = settings.ApiAuthorizationBypassPassword
             };
         }
@@ -66,6 +68,8 @@ namespace OstoslistaContracts
                 FriendWriteAccess = shopper.FriendWriteAccess ?? false,
                 ShowAdditionalButtons = shopper.ShowAdditionalButtons ?? true,
                 ShowArchivedItems = shopper.ShowArchivedItems ?? true,
+                ArchiveDaysToShow = shopper.ArchiveDaysToShow ?? 10,
+                OnlyOwnerCanDeleteArchives = shopper.OnlyOwnerCanDeleteArchives ?? true,
                 ApiAuthorizationBypassPassword = shopper.ApiAuthorizationBypassPassword
             };
         }

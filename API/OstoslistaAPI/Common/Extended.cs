@@ -88,10 +88,11 @@ namespace OstoslistaAPI.Common
         /// </summary>
         /// <param name="user"></param>
         /// <param name="shopper"></param>
+        /// <param name="userEmailAddressId"></param>
         /// <returns></returns>
-        public static bool GetShopperReadAuthorization(this ClaimsPrincipal user, ShopperEntity shopper)
+        public static bool GetShopperReadAuthorization(this ClaimsPrincipal user, ShopperEntity shopper, string userEmailAddressId = null)
         {
-            var userEmailAddressId = user.GetUserEmailIdentifier();
+            userEmailAddressId = userEmailAddressId ?? user.GetUserEmailIdentifier();
 
             return shopper?.Email == null ||
                    (shopper.PublicReadAccess ?? false) ||
@@ -107,16 +108,33 @@ namespace OstoslistaAPI.Common
         /// </summary>
         /// <param name="user"></param>
         /// <param name="shopper"></param>
+        /// <param name="userEmailAddressId"></param>
         /// <returns></returns>
-        public static bool GetShopperWriteAuthorization(this ClaimsPrincipal user, ShopperEntity shopper)
+        public static bool GetShopperWriteAuthorization(this ClaimsPrincipal user, ShopperEntity shopper, string userEmailAddressId = null)
         {
-            var userEmailAddressId = user.GetUserEmailIdentifier();
+            userEmailAddressId = userEmailAddressId ?? user.GetUserEmailIdentifier();
 
             return shopper?.Email == null ||
                    (shopper.PublicWriteAccess ?? false) ||
                    string.Equals(shopper.Email, userEmailAddressId, StringComparison.InvariantCultureIgnoreCase) ||
                    ((shopper.FriendWriteAccess ?? false) &&
-                   shopper.Friends.Any(o => string.Equals(o.Email, userEmailAddressId, StringComparison.InvariantCultureIgnoreCase)));
+                    shopper.Friends.Any(o => string.Equals(o.Email, userEmailAddressId, StringComparison.InvariantCultureIgnoreCase)));
+        }
+
+        /// <summary>
+        /// Get users delete archive authorization for a shopper
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="shopper"></param>
+        /// <param name="userEmailAddressId"></param>
+        /// <returns></returns>
+        public static bool GetShopperDeleteArchiveAuthorization(this ClaimsPrincipal user, ShopperEntity shopper, string userEmailAddressId = null)
+        {
+            userEmailAddressId = userEmailAddressId ?? user.GetUserEmailIdentifier();
+
+            return user.GetShopperOwnerAuthorization(shopper, userEmailAddressId) ||
+                   !(shopper.OnlyOwnerCanDeleteArchives ?? false) &&
+                   user.GetShopperWriteAuthorization(shopper, userEmailAddressId);
         }
 
         /// <summary>
@@ -124,10 +142,11 @@ namespace OstoslistaAPI.Common
         /// </summary>
         /// <param name="user"></param>
         /// <param name="shopper"></param>
+        /// <param name="userEmailAddressId"></param>
         /// <returns></returns>
-        public static bool GetShopperOwnerAuthorization(this ClaimsPrincipal user, ShopperEntity shopper)
+        public static bool GetShopperOwnerAuthorization(this ClaimsPrincipal user, ShopperEntity shopper, string userEmailAddressId = null)
         {
-            var userEmailAddressId = user.GetUserEmailIdentifier();
+            userEmailAddressId = userEmailAddressId ?? user.GetUserEmailIdentifier();
 
             return shopper?.Email != null &&
                    string.Equals(shopper.Email, userEmailAddressId, StringComparison.InvariantCultureIgnoreCase);

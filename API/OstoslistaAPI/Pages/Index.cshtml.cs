@@ -95,6 +95,18 @@ namespace OstoslistaAPI.Pages
         /// <summary>
         /// 
         /// </summary>
+        public bool UserIsAllowedToDeleteArchives
+        {
+            get
+            {
+                return Shopper != null && 
+                       (UserIsOwnerAuthenticated || !(Shopper.OnlyOwnerCanDeleteArchives ?? false) && UserIsWriteAuthenticated);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="shopperFriendId"></param>
         /// <returns></returns>
         public bool TryGetUserShopperFriendRequestId(out Guid shopperFriendId)
