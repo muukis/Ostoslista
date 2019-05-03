@@ -136,17 +136,17 @@ namespace OstoslistaAPI.Controllers
         /// <summary>
         /// Get similar shopping list items
         /// </summary>
-        /// <returns>All the shoppers the user is involved in</returns>
+        /// <returns>Similarities result containing similar shopping list items and similar archived shopping list items</returns>
         /// <param name="shopperName">Shopper name</param>
         /// <param name="title">Shopping list item title</param>
-        /// <returns>Array of <see cref="ShoppingListItemResult"/> objects</returns>
-        /// <response code="200">List of shoppers</response>
+        /// <returns><see cref="SimilaritiesResult"/> object</returns>
+        /// <response code="200">Similarities result containing similar shopping list items and similar archived shopping list items</response>
         /// <response code="400">Invalid request</response>
         /// <response code="401">Unauthorized request</response>
         /// <response code="500">Internal server error</response>
         [HttpPost]
         [Route("{shopperName}/findSimilarities")]
-        [ProducesResponseType(typeof(ShoppingListItemResult[]), 200)]
+        [ProducesResponseType(typeof(SimilaritiesResult), 200)]
         [ProducesResponseType(typeof(ErrorResult), 400)]
         [ProducesResponseType(typeof(ErrorResult), 401)]
         [ProducesResponseType(typeof(ErrorResult), 500)]
@@ -166,8 +166,23 @@ namespace OstoslistaAPI.Controllers
                     });
                 }
 
-                var items = shopper.FindSimilarities(title.Title).ToResults();
-                return Ok(items.OrderBy(o => o.Title));
+                var items = shopper.FindSimilarities(title.Title)
+                    .OrderBy(o => o.Title)
+                    .ToResults().ToArray();
+
+                var archivedItems = (
+                        from o in shopper.FindArchivedSimilarities(title.Title)
+                        group o by o.Title?.ToUpper()
+                        into g
+                        select g.OrderByDescending(t => t.Archived ?? DateTime.MinValue).First()
+                    ).ToResults().ToArray();
+
+                return Ok(new SimilaritiesResult
+                    {
+                        ItemSimilarities = items,
+                        ArchiveSimilarities = archivedItems
+                    }
+                );
             }
             catch (Exception)
             {

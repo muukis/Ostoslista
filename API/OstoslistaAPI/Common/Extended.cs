@@ -165,5 +165,16 @@ namespace OstoslistaAPI.Common
         {
             return shopper.Items.Where(o => _stringSimilarity.Similarity(o.Title.ToLower(), title.ToLower()) >= _stringSimilarityTreshold).ToList();
         }
+
+        /// <summary>
+        /// Find similar archived shopping list items
+        /// </summary>
+        /// <param name="shopper"></param>
+        /// <param name="title"></param>
+        /// <returns></returns>
+        public static List<ArchivedShoppingListItemEntity> FindArchivedSimilarities(this ShopperEntity shopper, string title)
+        {
+            return shopper.ArchivedItems.Where(o => _stringSimilarity.Similarity(o.Title.ToLower(), title.ToLower()) >= _stringSimilarityTreshold).ToList();
+        }
     }
 }

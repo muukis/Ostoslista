@@ -14,11 +14,17 @@
         width: 100%;
     }
 
-    #vertailuTuote {
+    #vertailuTuote, #vanhaVertailuTuote {
         color: tomato;
     }
 
     #samankaltaisetTuotteet {
+        font-size: 12px;
+        padding-top: 10px;
+        color: tomato;
+    }
+
+    #samankaltaisetVanhatTuotteet {
         font-size: 12px;
         padding-top: 10px;
         color: tomato;
@@ -82,7 +88,11 @@
             <div id="similaritiesHeader">Ostoskorista löytyy tuotteelle <span id="vertailuTuote">---</span><br/>samankaltaisia tuotteita:</div>
             <div style="text-align: center;"><div id="samankaltaisetTuotteet"></div></div>
         </div>
-        <div>
+        <div id="archivedSimilaritiesDialog" title="Vanhoja tuotteita..." style="display: none;">
+            <div id="similaritiesHeader">Ostit tuotetta <span id="vanhaVertailuTuote">---</span><br/>viimeksi:</div>
+            <div style="text-align: center;"><div id="samankaltaisetVanhatTuotteet"></div></div>
+        </div>
+        <div id="newShoppingListItem">
             <input type="text" id="uusiTuote" placeholder="Syötä uusi tuote..." onkeypress="return keyPress(event, checkSimilarities);" class="newItem"/>&nbsp;
             <input type="button" value="Lähetä" onclick="checkSimilarities();" class="buttons"/>
         </div>
@@ -102,7 +112,17 @@
             if (Model.Shopper?.ShowArchivedItems ?? false)
             {
         <text>
-        <h5 class="spaceAboveArchivedItems">Ostetut tuotteet: <i class="far fa-trash-alt" style="cursor: pointer;" title="Poista ostetut tuotteet" onclick="requestDeleteArchivedItems();"></i></h5>    
+        <h5 class="spaceAboveArchivedItems">
+            Ostetut tuotteet:    
+        @{
+            if (Model.UserIsWriteAuthenticated)
+            {
+        <text>
+            <i class="far fa-trash-alt" style="cursor: pointer;" title="Poista ostetut tuotteet" onclick="requestDeleteArchivedItems();"></i>
+        </text>
+            }
+        }
+        </h5>    
         <div class="shoppingListArchivedItems" id="vanhatOstokset">Ladataan...</div>
         </text>
             }
@@ -249,7 +269,7 @@
         row.hide().appendTo("#ostoslista").fadeIn(1000);
     }
 
-    function createArchivedItemElement(timestamp, title, itemId) {
+    function createArchivedItemElement(timestamp, title, itemId, allowDelete = true) {
         var row = $('<div class="archivedShoppingList-item-row"></div>');
         row.prop("title", title);
         var cell1 = $('<div class="archivedShoppingList-item-cell"></div>').text(timestamp);
@@ -258,20 +278,22 @@
         cell2.append($('<span style="margin-left: 10px"></span>').text(title));
         cell2.append($('<input type="hidden" name="vanhaTuoteId"/>').val(itemId));
         row.append(cell2);
-        @{
+        if (allowDelete) {
+            @{
             if (Model.UserIsWriteAuthenticated)
             {
-        <text>
-        var cell3 = $('<div class="archivedShoppingList-item-cell"></div>');
-        var deleteArchivedCell = $('<span style="margin-left: 10px"></span>');
-        var deleteArchivedItem = $('<i class="far fa-trash-alt" style="margin-left: 10px; cursor: pointer;" title="Poista tämä rivi">');
-        deleteArchivedItem.click(function() {
-            requestDeleteArchivedItem(itemId);
-        });
-        deleteArchivedCell.append(deleteArchivedItem);
-        cell3.append(deleteArchivedCell);
-        row.append(cell3);
-        </text>
+            <text>
+            var cell3 = $('<div class="archivedShoppingList-item-cell"></div>');
+            var deleteArchivedCell = $('<span style="margin-left: 10px"></span>');
+            var deleteArchivedItem = $('<i class="far fa-trash-alt" style="margin-left: 10px; cursor: pointer;" title="Poista tämä rivi">');
+            deleteArchivedItem.click(function() {
+                requestDeleteArchivedItem(itemId);
+            });
+            deleteArchivedCell.append(deleteArchivedItem);
+            cell3.append(deleteArchivedCell);
+            row.append(cell3);
+            </text>
+            }
             }
         }
         return row;
@@ -345,24 +367,39 @@
         {
     <text>
 
+    function addNewShoppingListItem() {
+        var uusiTuote = $("#uusiTuote");
+
+        if (!uusiTuote) {
+            return;
+        }
+
+        var title = uusiTuote.val().trim();
+        sendNew(uusiTuote, title);
+
+        $(this).dialog("close");
+    }
+
     $("#similaritiesDialog").dialog({
         modal: true,
         height: "auto",
         width: "auto",
         autoOpen: false,
         buttons: {
-            "Lähetä silti": function() {
-                var uusiTuote = $("#uusiTuote");
-
-                if (!uusiTuote) {
-                    return;
-                }
-
-                var title = uusiTuote.val().trim();
-                sendNew(uusiTuote, title);
-
+            "Lähetä silti": addNewShoppingListItem,
+            "Peruuta": function() {
                 $(this).dialog("close");
-            },
+            }
+        }
+    });
+
+    $("#archivedSimilaritiesDialog").dialog({
+        modal: true,
+        height: "auto",
+        width: "auto",
+        autoOpen: false,
+        buttons: {
+            "OK": addNewShoppingListItem,
             "Peruuta": function() {
                 $(this).dialog("close");
             }
@@ -395,7 +432,7 @@
         });
     }
 
-    function showSimilarities(data, title) {
+    function showItemSimilarities(data, title) {
         $("#vertailuTuote").text(title);
 
         var samankaltaisetTuotteetElem = $("#samankaltaisetTuotteet");
@@ -408,9 +445,28 @@
         $("#similaritiesDialog").dialog("open");
     }
 
+    function showArchiveSimilarities(data, title) {
+        $("#vanhaVertailuTuote").text(title);
+
+        var samankaltaisetTuotteetElem = $("#samankaltaisetVanhatTuotteet");
+        samankaltaisetTuotteetElem.html("");
+
+        for (var i = 0; data && i < data.length; i++) {
+            addArchivedItemToSimilarityList(samankaltaisetTuotteetElem, data[i]);
+        };
+
+        $("#archivedSimilaritiesDialog").dialog("open");
+    }
+
     function addItemToSimilarityList(samankaltaisetTuotteetElem, data) {
         var iconElem = createDefaultCheckBoxElement(data.Pending);
         var row = createItemRow(iconElem, data.Title, data.Id, false, false);
+        samankaltaisetTuotteetElem.append(row);
+    }
+
+    function addArchivedItemToSimilarityList(samankaltaisetTuotteetElem, data) {
+        var timestamp = getTimeStamp(data.Archived);
+        var row = createArchivedItemElement(timestamp, data.Title, data.Id, false);
         samankaltaisetTuotteetElem.append(row);
     }
 
@@ -427,6 +483,8 @@
             return;
         }
 
+        $("#newShoppingListItem").block({ message: null });
+
         $.ajax({
             type: 'POST',
             url: "/api/ShoppingList/@Model.UrlEncodedShopperName/findSimilarities",
@@ -438,19 +496,26 @@
                 Title: title
             }),
             success: function (data) {
-                if (data.length > 0) {
-                    showSimilarities(data, title);
+                $("#newShoppingListItem").unblock();
+
+                if (data.ItemSimilarities.length > 0) {
+                    showItemSimilarities(data.ItemSimilarities, title);
+                } else if (data.ArchiveSimilarities.length > 0) {
+                    showArchiveSimilarities(data.ArchiveSimilarities, title);
                 } else {
                     sendNew(uusiTuote, title);
                 }
             },
             error: function(e) {
+                $("#newShoppingListItem").unblock();
                 console.log("ERROR: " + e.toString());
             }
         });
     }
 
     function sendNew(uusiTuote, title) {
+        $("#newShoppingListItem").block({ message: null });
+
         $.ajax({
             type: 'POST',
             url: "/api/ShoppingList/@Model.UrlEncodedShopperName",
@@ -462,11 +527,13 @@
                 Title: title
             }),
             success: function () {
+                $("#newShoppingListItem").unblock();
                 checkConnectionState();
                 uusiTuote.val("");
                 uusiTuote.focus();
             },
             error: function(e) {
+                $("#newShoppingListItem").unblock();
                 console.log("ERROR: " + e.toString());
             }
         });
