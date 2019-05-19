@@ -25,6 +25,7 @@ namespace OstoslistaData
             shopper.Property(o => o.FriendWriteAccess).IsRequired(false).ValueGeneratedOnAdd();
             shopper.Property(o => o.FriendReadAccess).IsRequired(false).ValueGeneratedOnAdd();
             shopper.Property(o => o.ShowAdditionalButtons).IsRequired(false).ValueGeneratedOnAdd();
+            shopper.Property(o => o.ShowArchivedItems).IsRequired(false).ValueGeneratedOnAdd();
             shopper.Property(o => o.ArchiveDaysToShow).IsRequired(false).ValueGeneratedOnAdd();
             shopper.Property(o => o.OnlyOwnerCanDeleteArchives).IsRequired(false).ValueGeneratedOnAdd();
             shopper.Property(o => o.ApiAuthorizationBypassPassword).IsRequired(false).HasMaxLength(1024);
