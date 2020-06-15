@@ -9,10 +9,14 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.PlatformAbstractions;
+using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Serialization;
 using OstoslistaAPI.Common;
 using OstoslistaAPI.Hubs;
@@ -32,7 +36,7 @@ namespace OstoslistaAPI
         /// 
         /// </summary>
         /// <param name="hostEnv"></param>
-        public Startup(IHostingEnvironment hostEnv)
+        public Startup(IWebHostEnvironment hostEnv)
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(hostEnv.ContentRootPath)
@@ -44,7 +48,7 @@ namespace OstoslistaAPI
             if (hostEnv.IsEnvironment("Development"))
             {
                 // This will push telemetry data through Application Insights pipeline faster, allowing you to view results immediately.
-                builder.AddApplicationInsightsSettings(true);
+                //builder.AddApplicationInsightsSettings(true);
             }
 
             Configuration = builder.Build();
@@ -62,7 +66,7 @@ namespace OstoslistaAPI
         public void ConfigureServices(IServiceCollection services)
         {
             // Add framework services.
-            services.AddApplicationInsightsTelemetry(Configuration);
+            //services.AddApplicationInsightsTelemetry(Configuration);
 
             services.AddAuthentication(options =>
                 {
@@ -81,45 +85,37 @@ namespace OstoslistaAPI
                     googleOptions.ClaimActions.MapJsonKey(ClaimTypes.Surname, "family_name");
                     googleOptions.ClaimActions.MapJsonKey("urn:google:profile", "link");
                     googleOptions.ClaimActions.MapJsonKey(ClaimTypes.Email, "email");
-                    googleOptions.Events = new OAuthEvents
-                    {
-                        OnCreatingTicket = context =>
-                        {
-                            var identity = (ClaimsIdentity) context.Principal.Identity;
-                            var profileImg = context.User["picture"].ToString();
-                            identity.AddClaim(new Claim("profileImg", profileImg));
-                            return Task.FromResult(0);
-                        }
-                    };
+                    googleOptions.ClaimActions.MapJsonKey("picture", "picture");
                 }).AddCookie();
 
-            // Add framework services.
-            services
-                .AddMvc()
-                .AddJsonOptions(options =>
+            services.AddRazorPages();
+
+            services.AddControllers()
+                .AddNewtonsoftJson(options =>
                 {
                     options.SerializerSettings.ContractResolver = new DefaultContractResolver();
                 });
 
             services.AddTransient<IShoppingListDataService, ShoppingListDataService>();
             services.AddTransient<IShoppingListService, ShoppingListService>();
+            services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             string xmlComments = GetXmlCommentsPath();
 
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("ui",
-                    new Info
+                    new OpenApiInfo
                     {
                         Title = API_TITLE,
                         Description = "An API for creating and managing shopping list",
                         Version = "v1",
-                        TermsOfService = "None",
-                        Contact = new Contact
+                        TermsOfService = null,
+                        Contact = new OpenApiContact
                         {
-                            Email = "ostoslista@ostoslistaapi.azurewebsites.net",
+                            Email = "ostoslistat@ostoslistatapi.azurewebsites.net",
                             Name = "Mikko Andersson",
-                            Url = "https://ostoslistaapi.azurewebsites.net/"
+                            Url = new Uri("https://ostoslistatapi.azurewebsites.net/")
                         }
                     });
 
@@ -130,7 +126,7 @@ namespace OstoslistaAPI
                     c.IncludeXmlComments(xmlComments);
                 }
 
-                c.DescribeAllEnumsAsStrings();
+                //c.DescribeAllEnumsAsStrings();
             });
 
             services.AddDbContext<ShoppingListDataService>(options =>
@@ -154,7 +150,7 @@ namespace OstoslistaAPI
         /// </summary>
         /// <param name="app"></param>
         /// <param name="env"></param>
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -167,12 +163,14 @@ namespace OstoslistaAPI
 
             app.UseStaticFiles();
             app.UseSession();
-            app.UseSignalR(routes =>
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapHub<ShoppingListHub>("/shoppingListHub");
-            });
+                endpoints.MapRazorPages();
+                endpoints.MapHub<ShoppingListHub>("/shoppingListHub");
+            }); 
             app.UseAuthentication();
-            app.UseMvc();
 
             app.UseSwagger();
             app.UseSwaggerUI(c =>
