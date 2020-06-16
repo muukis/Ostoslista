@@ -163,14 +163,16 @@ namespace OstoslistaAPI
 
             app.UseStaticFiles();
             app.UseSession();
+            app.UseAuthentication();
             app.UseRouting();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages();
+                endpoints.MapControllers();
                 endpoints.MapHub<ShoppingListHub>("/shoppingListHub");
             }); 
-            app.UseAuthentication();
 
             app.UseSwagger();
             app.UseSwaggerUI(c =>
